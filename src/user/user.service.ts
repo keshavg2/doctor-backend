@@ -16,6 +16,10 @@ export class UserService {
     return this.usersRepository.save(user);
   }
 
+  findByPhone(phone: string) {
+    return this.usersRepository.findOne({ where: { phone } });
+  }
+
   findByEmail(email: string) {
     return this.usersRepository.findOne({ where: { email } });
   }
@@ -30,9 +34,6 @@ export class UserService {
 
   remove(id: number){
     const user =  this.usersRepository.findOne({where:{id:id}});
-    return this.usersRepository.save({
-      ...user,
-      delete: true
-    })
+    return user;
   }
 }
