@@ -5,8 +5,13 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Index,
+  OneToOne,
+  JoinColumn,
+  RelationId,
 } from 'typeorm';
 import {Role} from "../enums/role.enum"
+import { Doctor } from 'src/doctor/entities/doctor.entity';
+import { Patient } from 'src/patient/entities/patient.entity';
 
 @Entity('users')
 export class User {
@@ -35,13 +40,21 @@ export class User {
   @Column({ nullable: true })
   otp?: string;
 
+  @RelationId((user: User) => user.doctor)
+  doctorId: number;
+
+  @RelationId((user: User) => user.patient)
+  patientId: number;
+
   // Doctor ID (only if userType = doctor)
-  @Column({ nullable: true })
-  doctor_id?: number;
+  @OneToOne(() => Doctor, (doctor) => doctor.user, { nullable: true })
+  @JoinColumn({ name: 'doctor_id' })
+  doctor: Doctor;
 
   // Patient ID (only if userType = patient)
-  @Column({ nullable: true })
-  patient_id?: number;
+  @OneToOne(() => Patient, (patient) => patient.user, { nullable: true })
+  @JoinColumn({ name: 'patient_id' })
+  patient: Patient;
 
   @Column({
     type: 'enum',

@@ -8,15 +8,24 @@ import {
     OneToOne,
   } from 'typeorm';
   
-  @Entity('patients')
-  export class Patient {
+  @Entity('docotor')
+  export class Doctor {
     @PrimaryGeneratedColumn()
     id: number;
   
     @Column({ length: 100 })
     name: string;
   
-    @Column({ length: 15 })
+    @Column({ name: 'hospital_name', length: 150 })
+    hospitalName: string;
+  
+    @Column({ length: 100 })
+    department: string;
+  
+    @Column({ length: 150, unique: true })
+    email: string;
+  
+    @Column({ length: 15, unique: true })
     phone: string;
   
     @Column({ type: 'text' })

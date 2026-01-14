@@ -15,7 +15,7 @@ export class AuthController {
     const existing = await this.userService.findByPhone(body.phone);
     if (existing) throw new BadRequestException('Email already registered');
 
-    console.log(body, 'body');
+    // console.log(body, 'body');
     const hashedPassword = await bcrypt.hash(body.password, 10);
     return this.userService.createUser({
       ...body,
@@ -29,12 +29,10 @@ export class AuthController {
     const user = await this.userService.findByEmail(body.email);
     if (!user) throw new BadRequestException('Invalid email or password');
 
-    console.log(body,'body1');
     const isMatch = await bcrypt.compare(body.password, user.password);
     if (!isMatch) throw new BadRequestException('Invalid email or password');
 
     const token = await this.authService.generateToken(user);
-
     return { message: 'Login successful', access_token: token, user };
   }
 }
