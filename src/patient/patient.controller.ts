@@ -9,6 +9,7 @@ import {
   HttpStatus,
   HttpException,
   UseGuards,
+  Patch,
 } from '@nestjs/common';
 import { PatientService } from './patient.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
@@ -83,6 +84,30 @@ export class PatientController {
       );
     }
   }
+
+  // @Patch(':id')
+  // async update(@Param('id') id: string,
+  // @Body() updatePatientDto: UpdatePatientDto) {
+  //   try {
+  //     const data = await this.patientService.findOneAndUpdate(+id);
+  //     return {
+  //       statusCode: HttpStatus.OK,
+  //       message: 'Patient fetched successfully',
+  //       data,
+  //     };
+  //   } catch (error) {
+  //     throw new HttpException(
+  //       {
+  //         statusCode: HttpStatus.BAD_REQUEST,
+  //         message: error.message || 'Failed to fetch patient',
+  //       },
+  //       HttpStatus.BAD_REQUEST,
+  //     );
+  //   }
+  // }
+
+  
+  
 
   @Delete(':id')
   async remove(@Param('id') id: string) {

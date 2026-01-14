@@ -3,7 +3,7 @@ import {
   InternalServerErrorException,
   BadRequestException,
 } from '@nestjs/common';
-import { CreatePatientDto } from './dto/create-patient.dto';
+import { CreatePatientDto} from './dto/create-patient.dto';
 import { PatientListFilterDto } from './dto/patient-list-filter.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Patient } from './entities/patient.entity';
@@ -150,4 +150,25 @@ export class PatientService {
       );
     }
   }
+
+  // async findOneAndUpdate(id: number, update: UpdatePatientDto) {
+  //   try {
+  //     const patient = await this.patientRepository.findOne({
+  //       where: { id },
+  //       relations: ['user'],
+  //     });
+
+  //     if (!patient) {
+  //       throw new BadRequestException('Patient not found');
+  //     }
+
+  //     await this.patientRepository.save({
+  //       name: update?.name
+  //     })
+  //   } catch (error) {
+  //     throw new InternalServerErrorException(
+  //       error.message || 'Failed to fetch patient',
+  //     );
+  //   }
+  // }
 }

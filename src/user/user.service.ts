@@ -28,6 +28,8 @@ export class UserService {
   if (data.role === Role.Doctor) {
     const doctor = this.doctorRepository.create({
       phone: data.phone,
+      name: data.name,
+      email: data.email
     });
 
     const savedDoctor = await this.doctorRepository.save(doctor);
@@ -39,6 +41,7 @@ export class UserService {
   if (data.role === Role.Patient) {
     const patient = this.patientRepository.create({
       phone: data.phone,
+      name: data.name
     });
 
     const savedPatient = await this.patientRepository.save(patient);
