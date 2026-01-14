@@ -8,6 +8,7 @@ import { PatientListFilterDto } from './dto/patient-list-filter.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Patient } from './entities/patient.entity';
 import { Repository } from 'typeorm';
+import { UpdatePatientDto } from './dto/update-patient.dto';
 
 @Injectable()
 export class PatientService {
@@ -151,24 +152,25 @@ export class PatientService {
     }
   }
 
-  // async findOneAndUpdate(id: number, update: UpdatePatientDto) {
-  //   try {
-  //     const patient = await this.patientRepository.findOne({
-  //       where: { id },
-  //       relations: ['user'],
-  //     });
+  async findOneAndUpdate(id: number, update: UpdatePatientDto) {
+    try {
+      const patient = await this.patientRepository.findOne({
+        where: { id },
+        relations: ['user'],
+      });
 
-  //     if (!patient) {
-  //       throw new BadRequestException('Patient not found');
-  //     }
+      if (!patient) {
+        throw new BadRequestException('Patient not found');
+      }
 
-  //     await this.patientRepository.save({
-  //       name: update?.name
-  //     })
-  //   } catch (error) {
-  //     throw new InternalServerErrorException(
-  //       error.message || 'Failed to fetch patient',
-  //     );
-  //   }
-  // }
+      return await this.patientRepository.save({
+        id: id,
+        ...update
+      })
+    } catch (error) {
+      throw new InternalServerErrorException(
+        error.message || 'Failed to fetch patient',
+      );
+    }
+  }
 }
