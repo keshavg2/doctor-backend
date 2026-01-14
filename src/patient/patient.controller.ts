@@ -18,6 +18,7 @@ import { RolesGuard } from 'src/auth/roles.guard';
 import { Role } from 'src/user/enums/role.enum';
 import { Roles } from 'src/auth/roles.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { UpdatePatientDto } from './dto/update-patient.dto';
 
 @Controller('patient')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -85,29 +86,26 @@ export class PatientController {
     }
   }
 
-  // @Patch(':id')
-  // async update(@Param('id') id: string,
-  // @Body() updatePatientDto: UpdatePatientDto) {
-  //   try {
-  //     const data = await this.patientService.findOneAndUpdate(+id);
-  //     return {
-  //       statusCode: HttpStatus.OK,
-  //       message: 'Patient fetched successfully',
-  //       data,
-  //     };
-  //   } catch (error) {
-  //     throw new HttpException(
-  //       {
-  //         statusCode: HttpStatus.BAD_REQUEST,
-  //         message: error.message || 'Failed to fetch patient',
-  //       },
-  //       HttpStatus.BAD_REQUEST,
-  //     );
-  //   }
-  // }
-
-  
-  
+  @Patch(':id')
+  async update(@Param('id') id: string,
+  @Body() updatePatientDto: UpdatePatientDto) {
+    try {
+      const data = await this.patientService.findOneAndUpdate(+id, updatePatientDto);
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Patient fetched successfully',
+        data,
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: error.message || 'Failed to fetch patient',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
