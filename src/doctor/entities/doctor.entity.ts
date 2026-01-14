@@ -16,10 +16,10 @@ import {
     @Column({ length: 100 })
     name: string;
   
-    @Column({ name: 'hospital_name', length: 150 })
+    @Column({ name: 'hospital_name', length: 150, nullable:true })
     hospitalName: string;
   
-    @Column({ length: 100 })
+    @Column({ length: 100, nullable:true })
     department: string;
   
     @Column({ length: 150, unique: true })
@@ -28,19 +28,19 @@ import {
     @Column({ length: 15, unique: true })
     phone: string;
   
-    @Column({ type: 'text' })
+    @Column({ type: 'text', nullable:true })
     address: string;
   
-    @Column({ length: 10 })
+    @Column({ length: 10, nullable:true })
     pincode: string;
   
-    @Column({ length: 100 })
+    @Column({ length: 100, nullable:true })
     city: string;
   
-    @Column({ length: 100 })
+    @Column({ length: 100, nullable:true })
     state: string;
   
-    @Column({ length: 100 })
+    @Column({ length: 100, nullable:true })
     country: string;
 
     @OneToOne(() => User, (user) => user.patient)
