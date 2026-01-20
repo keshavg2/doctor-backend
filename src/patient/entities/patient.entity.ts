@@ -1,3 +1,4 @@
+import { Doctor } from 'src/doctor/entities/doctor.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
     Entity,
@@ -6,6 +7,8 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     OneToOne,
+    ManyToOne,
+    JoinColumn,
   } from 'typeorm';
   
   @Entity('patients')
@@ -36,6 +39,16 @@ import {
 
     @OneToOne(() => User, (user) => user.patient)
     user: User;
+
+    @Column({name: 'doctor_id', nullable: true})
+    doctorId: number;
+
+    @ManyToOne(() => Doctor, (doctor) => doctor.patient, {
+      onDelete: 'CASCADE',
+      nullable: true
+    })
+    @JoinColumn({ name: 'doctorId' })
+    doctors: Doctor;
   
     @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;
