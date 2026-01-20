@@ -18,7 +18,7 @@ import { RolesGuard } from 'src/auth/roles.guard';
 import { Role } from 'src/user/enums/role.enum';
 import { Roles } from 'src/auth/roles.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { UpdatePatientDto } from './dto/update-patient.dto';
+import { AssignDoctorDto, UpdatePatientDto } from './dto/update-patient.dto';
 
 @Controller('patient')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -121,6 +121,27 @@ export class PatientController {
         {
           statusCode: HttpStatus.BAD_REQUEST,
           message: error.message || 'Failed to delete patient',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  @Patch(':id/assignDoctor')
+  async assignDoctor(@Param('id') id: string,
+  @Body() assignDoctorDto: AssignDoctorDto) {
+    try {
+      const data = await this.patientService.assignDoctortoPatient(+id, assignDoctorDto);
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Assign Doctor to Patient',
+        data,
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: error.message || 'Failed to Assign Doctor',
         },
         HttpStatus.BAD_REQUEST,
       );

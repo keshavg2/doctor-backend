@@ -23,3 +23,8 @@ export class UpdatePatientDto {
   @IsOptional()
   country: string;
 }
+
+export class AssignDoctorDto{
+    @IsNotEmpty()
+    doctorId: number
+}
