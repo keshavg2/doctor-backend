@@ -1,4 +1,4 @@
-import { IsString, IsOptional } from 'class-validator';
+import { IsString, IsOptional, IsNumber } from 'class-validator';
 
 export class CreateMedicineDto {
   @IsString()
@@ -14,4 +14,10 @@ export class CreateMedicineDto {
   @IsOptional()
   @IsString()
   manufacturer?: string;
+
+  @IsNumber()
+  quantity: number;
+
+  @IsNumber()
+  price: number; 
 }
