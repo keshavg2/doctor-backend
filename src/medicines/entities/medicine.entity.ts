@@ -24,6 +24,12 @@ import {
   
     @Column({ length: 100, nullable: true })
     manufacturer: string;
+
+    @Column({nullable:true})
+    quantity: number;
+
+    @Column({nullable: true})
+    price: number;
   
     @Column({ default: true })
     isActive: boolean;

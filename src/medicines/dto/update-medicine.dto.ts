@@ -1,5 +1,4 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, IsNumber } from 'class-validator';
 
 
 export class UpdateMedicineDto{
@@ -18,4 +17,12 @@ export class UpdateMedicineDto{
     @IsOptional()
     @IsString()
     manufacturer?: string;
+
+    @IsOptional()
+    @IsNumber()
+    quantity: number;
+    
+    @IsOptional()
+    @IsNumber()
+    price: number; 
 }
