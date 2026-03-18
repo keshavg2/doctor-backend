@@ -1,0 +1,116 @@
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Department } from './entities/department.entity';
+import { CreateDepartmentDto } from './dto/create-department.dto';
+import { UpdateDepartmentDto } from './dto/update-department.dto';
+
+@Injectable()
+export class DepartmentsService {
+  constructor(
+    @InjectRepository(Department)
+    private readonly departmentRepository: Repository<Department>,
+  ) {}
+
+  async create(createDepartmentDto: CreateDepartmentDto) {
+    try {
+      const existingDepartment = await this.departmentRepository.findOne({
+        where: { departmentName: createDepartmentDto.departmentName },
+      });
+
+      if (existingDepartment) {
+        throw new BadRequestException('Department already exists');
+      }
+
+      const department = this.departmentRepository.create(createDepartmentDto);
+
+      const savedDepartment = await this.departmentRepository.save(department);
+
+      return {
+        message: 'Department created successfully',
+        data: savedDepartment,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async findAll() {
+    try {
+      const departments = await this.departmentRepository.find();
+
+      return {
+        message: 'Departments fetched successfully',
+        data: departments,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async findOne(id: number) {
+    try {
+      const department = await this.departmentRepository.findOne({
+        where: { id },
+      });
+
+      if (!department) {
+        throw new NotFoundException('Department not found');
+      }
+
+      return {
+        message: 'Department fetched successfully',
+        data: department,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async update(id: number, updateDepartmentDto: UpdateDepartmentDto) {
+    try {
+      const department = await this.departmentRepository.findOne({
+        where: { id },
+      });
+
+      if (!department) {
+        throw new NotFoundException('Department not found');
+      }
+
+      Object.assign(department, updateDepartmentDto);
+
+      const updatedDepartment = await this.departmentRepository.save(department);
+
+      return {
+        message: 'Department updated successfully',
+        data: updatedDepartment,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async remove(id: number) {
+    try {
+      const department = await this.departmentRepository.findOne({
+        where: { id },
+      });
+
+      if (!department) {
+        throw new NotFoundException('Department not found');
+      }
+
+      await this.departmentRepository.remove(department);
+
+      return {
+        message: 'Department deleted successfully',
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+}
