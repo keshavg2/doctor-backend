@@ -39,9 +39,26 @@ export class DepartmentsService {
     }
   }
 
-  async findAll() {
+  async findAll(page: number = 1, limit: number = 10) {
     try {
-      const departments = await this.departmentRepository.find();
+      // const departments = await this.departmentRepository.find();
+      const skip = (page - 1) * limit;
+
+    const [departments, total] = await this.departmentRepository.findAndCount({
+      order: {
+        id: 'DESC',
+      },
+      skip,
+      take: limit,
+    });
+
+    return {
+      departments,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
 
       return {
         message: 'Departments fetched successfully',

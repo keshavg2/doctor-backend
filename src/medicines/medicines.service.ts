@@ -25,12 +25,25 @@ export class MedicinesService {
   }
 
   /** LIST ALL */
-  async findAll() {
+  async findAll(page: number = 1, limit: number = 10) {
     try{
-    return this.medicineRepo.find({
+
+    const skip = (page - 1) * limit;
+
+    const [medicines, total] = await this.medicineRepo.findAndCount({
       where: { isActive: true },
       order: { createdAt: 'DESC' },
+      skip,
+      take: limit,
     });
+
+    return {
+      medicines,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }catch(e){
     console.log('Fetching the list of the medicine', e)
     throw(e)
