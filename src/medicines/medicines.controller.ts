@@ -29,9 +29,10 @@ export class MedicinesController {
   }
 
   @Get()
-  async findAll() {
+  async findAll(@Query('page') page: number = 1,
+  @Query('limit') limit: number = 10,) {
     try {
-      const data = await this.medicinesService.findAll();
+      const data = await this.medicinesService.findAll(page, limit);
       return {
         statusCode: HttpStatus.OK,
         message: 'Medicines fetched successfully',

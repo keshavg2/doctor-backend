@@ -8,6 +8,7 @@ import {
   Delete,
   HttpStatus,
   HttpException,
+  Query,
 } from '@nestjs/common';
 import { BedManagementService } from './bed_management.service';
 import { CreateBedManagementDto } from './dto/create-bed_management.dto';
@@ -40,9 +41,12 @@ export class BedManagementController {
   }
 
   @Get()
-  async findAll() {
+  async findAll(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
     try {
-      const data = await this.bedManagementService.findAll();
+      const data = await this.bedManagementService.findAll(page, limit);
       return {
         statusCode: HttpStatus.OK,
         message: 'Beds fetched successfully',

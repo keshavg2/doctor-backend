@@ -8,6 +8,7 @@ import {
   Delete,
   HttpStatus,
   HttpException,
+  Query,
 } from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
@@ -38,9 +39,10 @@ export class AppointmentsController {
   }
 
   @Get()
-  async findAll() {
+  async findAll(@Query('page') page: number = 1,
+  @Query('limit') limit: number = 10,) {
     try {
-      const data = await this.appointmentsService.findAll();
+      const data = await this.appointmentsService.findAll(page, limit);
       return {
         statusCode: HttpStatus.OK,
         message: 'Appointments fetched successfully',

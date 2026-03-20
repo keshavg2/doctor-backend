@@ -31,9 +31,25 @@ export class BedManagementService {
   }
 
   // FIND ALL
-  async findAll(): Promise<BedManagement[]> {
+  async findAll(page: number = 1, limit: number = 10) {
     try {
-      return await this.bedRepository.find();
+      const skip = (page - 1) * limit;
+      // return await this.bedRepository.find();
+      const [beds, total] = await this.bedRepository.findAndCount({
+        order: {
+          id: 'DESC',
+        },
+        skip,
+        take: limit,
+      });
+  
+      return {
+        beds,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      };
     } catch (error) {
       throw new BadRequestException(
         error.message || 'Failed to fetch beds',
