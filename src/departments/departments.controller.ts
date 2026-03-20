@@ -8,6 +8,7 @@ import {
   Delete,
   HttpException,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { DepartmentsService } from './departments.service';
 import { CreateDepartmentDto } from './dto/create-department.dto';
@@ -30,9 +31,10 @@ export class DepartmentsController {
   }
 
   @Get()
-  async findAll() {
+  async findAll(@Query('page') page: number = 1,
+  @Query('limit') limit: number = 10,) {
     try {
-      return await this.departmentsService.findAll();
+      return await this.departmentsService.findAll(page, limit);
     } catch (error) {
       throw new HttpException(
         error.message || 'Failed to fetch departments',

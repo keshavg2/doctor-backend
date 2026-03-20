@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -10,29 +14,27 @@ import { InvoiceMedicine } from 'src/invoice_medicines/entities/invoice_medicine
 export class InvoiceService {
   constructor(
     private readonly dataSource: DataSource,
+
     @InjectRepository(Invoice)
     private readonly invoiceRepo: Repository<Invoice>,
 
     @InjectRepository(InvoiceMedicine)
     private readonly invoiceMedicineRepo: Repository<InvoiceMedicine>,
-  ){
+  ) {}
 
-  }
-  create(createInvoiceDto: CreateInvoiceDto) {
+  async create(createInvoiceDto: CreateInvoiceDto) {
     const { patientId, doctorId, medicines } = createInvoiceDto;
 
     if (!medicines || medicines.length === 0) {
       throw new BadRequestException('At least one medicine is required');
     }
 
-    return this.dataSource.transaction(async (manager) => {
-      /** ---------------- Calculate Total ---------------- */
+    return await this.dataSource.transaction(async (manager) => {
       const totalPrice = medicines.reduce(
         (sum, med) => sum + med.price * med.quantity,
         0,
       );
 
-      /** ---------------- Create Invoice ---------------- */
       const invoice = manager.create(Invoice, {
         patientId,
         doctorId,
@@ -42,7 +44,6 @@ export class InvoiceService {
 
       const savedInvoice = await manager.save(invoice);
 
-      /** ---------------- Create Invoice Medicines ---------------- */
       const invoiceMedicines = medicines.map((med) =>
         manager.create(InvoiceMedicine, {
           invoiceId: savedInvoice.id,
@@ -57,27 +58,124 @@ export class InvoiceService {
 
       await manager.save(invoiceMedicines);
 
-      /** ---------------- Return Invoice with Medicines ---------------- */
-      return manager.findOne(Invoice, {
+      return await manager.findOne(Invoice, {
         where: { id: savedInvoice.id },
         relations: ['medicines'],
       });
     });
   }
 
-  findAll() {
-    return `This action returns all invoice`;
+  async findAll(page: number = 1, limit: number = 10) {
+    try {
+      const skip = (page - 1) * limit;
+      const [invoices, total] = await this.invoiceRepo.findAndCount({
+        relations: ['medicines'],
+        order: {
+          id: 'DESC',
+        },
+        skip,
+        take: limit,
+      });
+  
+      return {
+        invoices,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      };
+
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} invoice`;
+  async findOne(id: number) {
+    try {
+      const invoice = await this.invoiceRepo.findOne({
+        where: { id },
+        relations: ['medicines'],
+      });
+
+      if (!invoice) {
+        throw new NotFoundException('Invoice not found');
+      }
+
+      return invoice;
+    } catch (error) {
+      throw error;
+    }
   }
 
-  update(id: number, updateInvoiceDto: UpdateInvoiceDto) {
-    return `This action updates a #${id} invoice`;
+  async update(id: number, updateInvoiceDto: UpdateInvoiceDto) {
+    const invoice = await this.invoiceRepo.findOne({
+      where: { id },
+      relations: ['medicines'],
+    });
+
+    if (!invoice) {
+      throw new NotFoundException('Invoice not found');
+    }
+
+    return await this.dataSource.transaction(async (manager) => {
+      const { medicines } = updateInvoiceDto;
+
+      if (medicines && medicines.length > 0) {
+        await manager.delete(InvoiceMedicine, { invoiceId: id });
+
+        const updatedMedicines = medicines.map((med) =>
+          manager.create(InvoiceMedicine, {
+            invoiceId: id,
+            medicineId: med.medicineId,
+            quantity: med.quantity,
+            strength: med.strength,
+            type: med.type,
+            price: med.price,
+            subtotal: med.price * med.quantity,
+          }),
+        );
+
+        await manager.save(updatedMedicines);
+
+        invoice.totalPrice = medicines.reduce(
+          (sum, med) => sum + med.price * med.quantity,
+          0,
+        );
+      }
+
+      if (updateInvoiceDto.patientId) {
+        invoice.patientId = updateInvoiceDto.patientId;
+      }
+
+      if (updateInvoiceDto.doctorId) {
+        invoice.doctorId = updateInvoiceDto.doctorId;
+      }
+
+      await manager.save(invoice);
+
+      return await manager.findOne(Invoice, {
+        where: { id },
+        relations: ['medicines'],
+      });
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} invoice`;
+  async remove(id: number) {
+    const invoice = await this.invoiceRepo.findOne({
+      where: { id },
+    });
+
+    if (!invoice) {
+      throw new NotFoundException('Invoice not found');
+    }
+
+    return await this.dataSource.transaction(async (manager) => {
+      await manager.delete(InvoiceMedicine, { invoiceId: id });
+      await manager.delete(Invoice, { id });
+
+      return {
+        message: 'Invoice deleted successfully',
+      };
+    });
   }
 }

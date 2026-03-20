@@ -50,11 +50,22 @@ export class AppointmentsService {
     }
   }
 
-  async findAll(): Promise<Appointment[]> {
+  async findAll(page: number = 1, limit: number = 10){
     try {
-      return await this.appointmentRepository.find({
+      const skip = (page - 1) * limit;
+      const [appointments, total] =  await this.appointmentRepository.findAndCount({
         order: { createdAt: 'DESC' },
+        skip,
+        take: limit,
       });
+
+      return {
+        appointments,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      };
     } catch (error) {
       throw new BadRequestException(
         error.message || 'Failed to fetch appointments',
