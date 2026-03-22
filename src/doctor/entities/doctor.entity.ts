@@ -1,3 +1,4 @@
+import { Department } from 'src/departments/entities/department.entity';
 import { Patient } from 'src/patient/entities/patient.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
@@ -8,6 +9,8 @@ import {
     UpdateDateColumn,
     OneToOne,
     OneToMany,
+    ManyToOne,
+    JoinColumn,
   } from 'typeorm';
   
   @Entity('doctor')
@@ -21,8 +24,13 @@ import {
     @Column({ name: 'hospital_name', length: 150, nullable:true })
     hospitalName: string;
   
-    @Column({ length: 100, nullable:true })
-    department: string;
+    @Column({ nullable: true })
+    departmentId: number;
+
+    @ManyToOne(() => Department)
+    @JoinColumn({ name: 'departmentId' })
+    department: Department;
+
   
     @Column({ length: 150, unique: true })
     email: string;
@@ -45,11 +53,8 @@ import {
     @Column({ length: 100, nullable:true })
     country: string;
 
-    @OneToOne(() => User, (user) => user.patient)
+    @OneToOne(() => User, (user) => user.doctor)
     user: User;
-
-    @OneToMany(() => Patient, (patient) => patient.doctors)
-    patient: Patient;
   
     @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;
