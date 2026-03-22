@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpStatus,
+  HttpException,
+  Query,
+} from '@nestjs/common';
 import { DoctorService } from './doctor.service';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
@@ -8,27 +19,112 @@ export class DoctorController {
   constructor(private readonly doctorService: DoctorService) {}
 
   @Post()
-  create(@Body() createDoctorDto: CreateDoctorDto) {
-    return this.doctorService.create(createDoctorDto);
+  async create(@Body() createDoctorDto: CreateDoctorDto) {
+    try {
+      const data = await this.doctorService.create(createDoctorDto);
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Doctor created successfully',
+        data,
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: error.message || 'Failed to create doctor',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   @Get()
-  findAll() {
-    return this.doctorService.findAll();
+  async findAll(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
+    try {
+      const data = await this.doctorService.findAll(page, limit);
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Doctors fetched successfully',
+        data,
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: error.message || 'Failed to fetch doctors',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.doctorService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    try {
+      const data = await this.doctorService.findOne(+id);
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Doctor fetched successfully',
+        data,
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: error.message || 'Doctor not found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDoctorDto: UpdateDoctorDto) {
-    return this.doctorService.update(+id, updateDoctorDto);
+  async update(
+    @Param('id') id: string,
+    @Body() updateDoctorDto: UpdateDoctorDto,
+  ) {
+    try {
+      const data = await this.doctorService.update(+id, updateDoctorDto);
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Doctor updated successfully',
+        data,
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: error.message || 'Failed to update doctor',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.doctorService.remove(+id);
+  async remove(@Param('id') id: string) {
+    try {
+      await this.doctorService.remove(+id);
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Doctor deleted successfully',
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: error.message || 'Failed to delete doctor',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 }

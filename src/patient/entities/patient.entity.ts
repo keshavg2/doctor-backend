@@ -39,16 +39,6 @@ import {
 
     @OneToOne(() => User, (user) => user.patient)
     user: User;
-
-    @Column({name: 'doctor_id', nullable: true})
-    doctorId: number;
-
-    @ManyToOne(() => Doctor, (doctor) => doctor.patient, {
-      onDelete: 'CASCADE',
-      nullable: true
-    })
-    @JoinColumn({ name: 'doctorId' })
-    doctors: Doctor;
   
     @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;

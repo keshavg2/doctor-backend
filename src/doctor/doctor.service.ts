@@ -1,26 +1,116 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Doctor } from './entities/doctor.entity';
 
 @Injectable()
 export class DoctorService {
-  create(createDoctorDto: CreateDoctorDto) {
-    return 'This action adds a new doctor';
+  constructor(
+    @InjectRepository(Doctor)
+    private readonly doctorRepo: Repository<Doctor>,
+  ) {}
+
+  async create(createDoctorDto: CreateDoctorDto) {
+    try {
+      const existingDoctor = await this.doctorRepo.findOne({
+        where: { email: createDoctorDto.email },
+      });
+
+      if (existingDoctor) {
+        throw new BadRequestException('Doctor email already exists');
+      }
+
+      const doctor = this.doctorRepo.create(createDoctorDto);
+
+      return await this.doctorRepo.save(doctor);
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 
-  findAll() {
-    return `This action returns all doctor`;
+  async findAll(page: number = 1, limit: number = 10) {
+    try {
+      const skip = (page - 1) * limit;
+
+      const [doctors, total] = await this.doctorRepo.findAndCount({
+        relations: ['department'],
+        order: {
+          id: 'DESC',
+        },
+        skip,
+        take: limit,
+      });
+
+      return {
+        doctors,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      };
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} doctor`;
+  async findOne(id: number) {
+    try {
+      const doctor = await this.doctorRepo.findOne({
+        where: { id },
+        relations: ['department'],
+      });
+
+      if (!doctor) {
+        throw new NotFoundException('Doctor not found');
+      }
+
+      return doctor;
+    } catch (error) {
+      throw error;
+    }
   }
 
-  update(id: number, updateDoctorDto: UpdateDoctorDto) {
-    return `This action updates a #${id} doctor`;
+  async update(id: number, updateDoctorDto: UpdateDoctorDto) {
+    try {
+      const doctor = await this.doctorRepo.findOne({
+        where: { id },
+      });
+
+      if (!doctor) {
+        throw new NotFoundException('Doctor not found');
+      }
+
+      Object.assign(doctor, updateDoctorDto);
+
+      return await this.doctorRepo.save(doctor);
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} doctor`;
+  async remove(id: number) {
+    try {
+      const doctor = await this.doctorRepo.findOne({
+        where: { id },
+      });
+
+      if (!doctor) {
+        throw new NotFoundException('Doctor not found');
+      }
+
+      await this.doctorRepo.remove(doctor);
+
+      return {
+        message: 'Doctor deleted successfully',
+      };
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 }
