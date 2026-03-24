@@ -19,17 +19,17 @@ export class Invoice {
 
   /** ---------------- Relations ---------------- */
 
-  @Column()
+  @Column({ nullable: true })
   patientId: number;
 
-  @ManyToOne(() => Patient)
-  @JoinColumn({ name: 'patientId' })
+  @ManyToOne(() => Patient, { nullable: true, onDelete: 'SET NULL', })
+  @JoinColumn({ name: 'patientId'})
   patient: Patient;
 
-  @Column()
+  @Column({ nullable: true })
   doctorId: number;
 
-  @ManyToOne(() => Doctor)
+  @ManyToOne(() => Doctor, { nullable: true, onDelete: 'SET NULL', })
   @JoinColumn({ name: 'doctorId' })
   doctor: Doctor;
 
