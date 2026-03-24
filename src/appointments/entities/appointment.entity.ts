@@ -28,18 +28,18 @@ import {
     @PrimaryGeneratedColumn()
     id: number;
   
-    @Column({ type: 'int' })
+    @Column({ type: 'int' , nullable: true })
     patientId: number;
 
-    @ManyToOne(() => Patient, { eager: false })
+    @ManyToOne(() => Patient, { eager: false, nullable: true, onDelete: 'SET NULL', })
     @JoinColumn({ name: 'patientId' })
     patient: User;
 
     /* ---------------- Doctor ---------------- */
-    @Column({ type: 'int' })
+    @Column({ type: 'int', nullable: true })
     doctorId: number;
 
-    @ManyToOne(() => Doctor, { eager: false })
+    @ManyToOne(() => Doctor, { eager: false, nullable: true, onDelete: 'SET NULL', })
     @JoinColumn({ name: 'doctorId' })
     doctor: User;
   
