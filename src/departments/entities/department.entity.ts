@@ -1,9 +1,11 @@
+import { Doctor } from 'src/doctor/entities/doctor.entity';
 import {
     Entity,
     PrimaryGeneratedColumn,
     Column,
     CreateDateColumn,
     UpdateDateColumn,
+    OneToMany,
   } from 'typeorm';
   
   @Entity('departments')
@@ -25,4 +27,8 @@ import {
   
     @UpdateDateColumn()
     updatedAt: Date;
+
+    @OneToMany(() => Doctor, (doctor) => doctor.department)
+    doctors: Doctor[];
+
   }
