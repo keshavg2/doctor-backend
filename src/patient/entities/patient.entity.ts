@@ -21,6 +21,9 @@ import {
   
     @Column({ length: 15 })
     phone: string;
+
+    @Column({ length: 150, unique: true, nullable: true })
+    email: string;
   
     @Column({ type: 'text' })
     address: string;
