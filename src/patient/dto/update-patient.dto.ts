@@ -22,6 +22,9 @@ export class UpdatePatientDto {
 
   @IsOptional()
   country: string;
+
+  @IsOptional()
+  email: string;
 }
 
 export class AssignDoctorDto{
