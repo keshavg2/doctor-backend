@@ -27,6 +27,7 @@ export class PatientService {
         state,
         country,
         pincode,
+        email
       } = createPatientDto;
 
       const patient = this.patientRepository.create({
@@ -37,6 +38,7 @@ export class PatientService {
         state,
         country,
         pincode,
+        email
       });
 
       return await this.patientRepository.save(patient);
