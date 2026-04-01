@@ -69,7 +69,7 @@ export class InvoiceService {
     try {
       const skip = (page - 1) * limit;
       const [invoices, total] = await this.invoiceRepo.findAndCount({
-        relations: ['medicines'],
+        relations: ['medicines', 'doctor', 'patient'],
         order: {
           id: 'DESC',
         },
