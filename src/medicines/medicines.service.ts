@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Medicine } from './entities/medicine.entity';
+import { Medicine, MedicineStatus } from './entities/medicine.entity';
 import { CreateMedicineDto } from './dto/create-medicine.dto';
 import { UpdateMedicineDto } from './dto/update-medicine.dto';
 import { MedicineListDto } from './dto/medicine-list.dto';
@@ -92,5 +92,28 @@ export class MedicinesService {
     console.log('Error in delting the medicine api', e)
     throw(e)
   }
+  }
+
+  async getCardCounts() {
+    const totalMedicines = await this.medicineRepo.count();
+
+    const available = await this.medicineRepo.count({
+      where: { status: MedicineStatus.AVAILABLE },
+    });
+
+    const lowStock = await this.medicineRepo.count({
+      where: { status: MedicineStatus.LOW_STOCK },
+    });
+
+    const critical = await this.medicineRepo.count({
+      where: { status: MedicineStatus.CRITICAL },
+    });
+
+    return {
+      totalMedicines,
+      available,
+      lowStock,
+      critical,
+    };
   }
 }
