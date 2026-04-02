@@ -63,6 +63,25 @@ export class BedManagementController {
     }
   }
 
+  @Get('count')
+  async dashboardCounts() {
+    try {
+      const data = await this.bedManagementService.getCardCounts();
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Bed counts fetched successfully',
+        data,
+      };
+    } catch (error) {
+      return {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: error.message || 'Failed to fetch bed counts',
+        data: null,
+      };
+    }
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     try {

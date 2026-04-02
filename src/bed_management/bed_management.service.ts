@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { BedManagement } from './entities/bed_management.entity';
+import { BedManagement, BedStatus } from './entities/bed_management.entity';
 import { CreateBedManagementDto } from './dto/create-bed_management.dto';
 import { UpdateBedManagementDto } from './dto/update-bed_management.dto';
 
@@ -113,5 +113,28 @@ export class BedManagementService {
             error.message || 'Failed to delete bed',
           );
     }
+  }
+
+  async getCardCounts() {
+    const totalBeds = await this.bedRepository.count();
+
+    const available = await this.bedRepository.count({
+      where: { status: BedStatus.AVAILABLE },
+    });
+
+    const occupied = await this.bedRepository.count({
+      where: { status: BedStatus.OCCUPIED },
+    });
+
+    const maintenance = await this.bedRepository.count({
+      where: { status: BedStatus.MAINTENANCE },
+    });
+
+    return {
+      totalBeds,
+      available,
+      occupied,
+      maintenance,
+    };
   }
 }
