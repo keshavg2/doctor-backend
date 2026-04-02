@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Appointment } from './entities/appointment.entity';
+import { Appointment, AppointmentStatus } from './entities/appointment.entity';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { Doctor } from 'src/doctor/entities/doctor.entity';
@@ -118,5 +118,28 @@ export class AppointmentsService {
         error.message || 'Failed to delete appointment',
       );
     }
+  }
+
+  async getCardCounts() {
+    const totalAppointments = await this.appointmentRepository.count();
+
+    const scheduled = await this.appointmentRepository.count({
+      where: { status: AppointmentStatus.SCHEDULED },
+    });
+
+    const completed = await this.appointmentRepository.count({
+      where: { status: AppointmentStatus.COMPLETED },
+    });
+
+    const cancelled = await this.appointmentRepository.count({
+      where: { status: AppointmentStatus.CANCELLED },
+    });
+
+    return {
+      totalAppointments,
+      scheduled,
+      completed,
+      cancelled,
+    };
   }
 }

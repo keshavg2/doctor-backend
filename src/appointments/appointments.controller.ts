@@ -59,6 +59,25 @@ export class AppointmentsController {
     }
   }
 
+  @Get('count')
+  async dashboardCounts() {
+    try {
+      const data = await this.appointmentsService.getCardCounts();
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Appointment counts fetched successfully',
+        data,
+      };
+    } catch (error) {
+      return {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: error.message || 'Failed to fetch appointment counts',
+        data: null,
+      };
+    }
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: number) {
     try {
