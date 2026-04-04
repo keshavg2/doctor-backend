@@ -19,11 +19,15 @@ export class UserService {
   ) {}
 
   async createUser(data: Partial<User>) {
+    console.log(data);
     const user = this.usersRepository.create(data);
+
+    console.log(user);
 
     // save first to get user.id
     const savedUser = await this.usersRepository.save(user);
 
+    console.log(savedUser);
   // if role is DOCTOR
   if (data.role === Role.Doctor) {
     const doctor = this.doctorRepository.create({
@@ -34,7 +38,7 @@ export class UserService {
 
     const savedDoctor = await this.doctorRepository.save(doctor);
 
-    savedUser.doctorId = savedDoctor.id;
+    savedUser.doctor = savedDoctor;
   }
 
   // if role is PATIENT
@@ -46,7 +50,7 @@ export class UserService {
 
     const savedPatient = await this.patientRepository.save(patient);
 
-    savedUser.patientId = savedPatient.id;
+    savedUser.patient = savedPatient;
   }
 
   // update user with doctorId / patientId

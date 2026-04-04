@@ -22,4 +22,8 @@ export class CreateAuthDto {
   @IsNotEmpty()
   @IsEnum(Role)
   role: Role;
+
+  @IsNotEmpty()
+  @IsString()
+  hospitalName: string;
 }

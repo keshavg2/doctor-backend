@@ -10,6 +10,12 @@ import {
     ManyToOne,
     JoinColumn,
   } from 'typeorm';
+
+  export enum Gender {
+    MALE = 'MALE',
+    FEMALE = 'FEMALE',
+    OTHER = 'OTHER',
+  }  
   
   @Entity('patients')
   export class Patient {
@@ -39,6 +45,16 @@ import {
   
     @Column({ length: 100 })
     country: string;
+
+    @Column({ type: 'int', nullable: true })
+  age: number;
+
+  @Column({
+    type: 'enum',
+    enum: Gender,
+    nullable: true,
+  })
+  gender: Gender;
 
     @OneToOne(() => User, (user) => user.patient)
     user: User;

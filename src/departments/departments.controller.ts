@@ -43,6 +43,26 @@ export class DepartmentsController {
     }
   }
 
+  @Get('count')
+  async getCounts() {
+    try {
+      const data = await this.departmentsService.getDepartmentCounts();
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Patient Count',
+        data,
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: error.message || 'Failed to Load patient Count',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     try {
@@ -81,4 +101,6 @@ export class DepartmentsController {
       );
     }
   }
+
+  
 }
