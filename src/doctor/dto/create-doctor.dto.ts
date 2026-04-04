@@ -4,6 +4,8 @@ import {
     IsOptional,
     Length,
     IsNumber,
+    isBoolean,
+    IsBoolean,
   } from 'class-validator';
   
   export class CreateDoctorDto {
@@ -43,4 +45,11 @@ import {
     @IsOptional()
     @IsString()
     country?: string;
+
+    @IsString()
+    qualification: string;
+
+    @IsOptional()
+    @IsBoolean()
+    active: boolean;
   }

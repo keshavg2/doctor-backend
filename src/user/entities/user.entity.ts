@@ -8,10 +8,12 @@ import {
   OneToOne,
   JoinColumn,
   RelationId,
+  ManyToOne,
 } from 'typeorm';
 import {Role} from "../enums/role.enum"
 import { Doctor } from 'src/doctor/entities/doctor.entity';
 import { Patient } from 'src/patient/entities/patient.entity';
+import { Hospital } from 'src/hospital/entities/hospital.entity';
 
 @Entity('users')
 export class User {
@@ -61,6 +63,13 @@ export class User {
     enum: Role,
   })
   role: Role;
+
+  @RelationId((user: User) => user.hospital)
+  hospitalId: number;
+
+  @ManyToOne(() => Hospital, { nullable: true })
+  @JoinColumn({ name: 'hospital_id' })
+  hospital: Hospital;
 
   @CreateDateColumn()
   createdAt: Date;

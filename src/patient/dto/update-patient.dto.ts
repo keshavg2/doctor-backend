@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsString, IsPhoneNumber, IsOptional } from 'class-validator';
+import { Gender } from '../entities/patient.entity';
 
 export class UpdatePatientDto {
   @IsOptional()
@@ -25,6 +26,12 @@ export class UpdatePatientDto {
 
   @IsOptional()
   email: string;
+
+  @IsOptional()
+  age: number;
+
+  @IsOptional()
+  gender: Gender;
 }
 
 export class AssignDoctorDto{

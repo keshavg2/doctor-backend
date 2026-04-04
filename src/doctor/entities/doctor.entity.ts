@@ -53,6 +53,12 @@ import {
     @Column({ length: 100, nullable:true })
     country: string;
 
+    @Column({ length: 150, nullable: true })
+  qualification: string;
+
+  @Column({ default: true })
+  active: boolean;
+
     @OneToOne(() => User, (user) => user.doctor)
     user: User;
   

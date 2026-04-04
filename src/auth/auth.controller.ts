@@ -3,11 +3,14 @@ import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcrypt';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { AuthService } from './auth.service';
+import { privateDecrypt } from 'crypto';
+import { HospitalService } from 'src/hospital/hospital.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly userService: UserService,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
+    private readonly hospitalService: HospitalService
   ) {}
 
   @Post('signup')
@@ -17,8 +20,11 @@ export class AuthController {
 
     // console.log(body, 'body');
     const hashedPassword = await bcrypt.hash(body.password, 10);
+
+    const hospital =  await this.hospitalService.create(body.hospitalName)
     return this.userService.createUser({
       ...body,
+      hospital: hospital,
       password: hashedPassword,
     });
   }
