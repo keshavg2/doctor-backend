@@ -20,7 +20,7 @@ import { HospitalModule } from './hospital/hospital.module';
       host: 'localhost',
       port: 5432,
       username: 'postgres',
-      password: 'postgres',
+      password: 'india@123',
       database: 'doctor-backend',
       autoLoadEntities: true,
       synchronize: true,
