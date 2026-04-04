@@ -66,6 +66,27 @@ export class PatientController {
     }
   }
 
+  @Get('count')
+  async getCounts() {
+    try {
+      const data = await this.patientService.getPatientCounts();
+      console.log(data);
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Patient Count',
+        data,
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: error.message || 'Failed to Load patient Count',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     try {
@@ -147,4 +168,6 @@ export class PatientController {
       );
     }
   }
+
+  
 }

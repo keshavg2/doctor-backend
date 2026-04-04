@@ -8,12 +8,18 @@ import { Repository } from 'typeorm';
 import { Department } from './entities/department.entity';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
+import { Doctor } from 'src/doctor/entities/doctor.entity';
+import { Appointment, AppointmentStatus } from 'src/appointments/entities/appointment.entity';
 
 @Injectable()
 export class DepartmentsService {
   constructor(
     @InjectRepository(Department)
     private readonly departmentRepository: Repository<Department>,
+    @InjectRepository(Doctor)
+    private readonly doctorRepository: Repository<Doctor>,
+    @InjectRepository(Appointment)
+    private readonly appointmentRepository: Repository<Appointment>,
   ) {}
 
   async create(createDepartmentDto: CreateDepartmentDto) {
@@ -129,5 +135,30 @@ export class DepartmentsService {
     } catch (error) {
       throw error;
     }
+  }
+
+  async getDepartmentCounts() {
+    const totalDepartments = await this.departmentRepository.count();
+  
+    const totalDoctors = await this.doctorRepository.count();
+  
+    const visitedPatients = await this.appointmentRepository.count({
+      where: {
+        status: AppointmentStatus.COMPLETED,
+      },
+    });
+  
+    const unvisitedPatients = await this.appointmentRepository.count({
+      where: {
+        status: AppointmentStatus.SCHEDULED,
+      },
+    });
+  
+    return {
+      totalDoctors,
+      totalDepartments,
+      visitedPatients,
+      unvisitedPatients,
+    };
   }
 }

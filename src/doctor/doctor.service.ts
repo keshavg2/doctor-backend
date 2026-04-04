@@ -8,12 +8,15 @@ import { UpdateDoctorDto } from './dto/update-doctor.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Doctor } from './entities/doctor.entity';
+import { Department } from 'src/departments/entities/department.entity';
 
 @Injectable()
 export class DoctorService {
   constructor(
     @InjectRepository(Doctor)
     private readonly doctorRepo: Repository<Doctor>,
+    @InjectRepository(Department)
+    private readonly departmentRepo: Repository<Department>,
   ) {}
 
   async create(createDoctorDto: CreateDoctorDto) {
@@ -112,5 +115,30 @@ export class DoctorService {
     } catch (error) {
       throw new BadRequestException(error.message);
     }
+  }
+
+  async getDoctorCounts() {
+    const totalDoctors = await this.doctorRepo.count();
+  
+    const totalDepartments = await this.departmentRepo.count();
+  
+    const availableDoctors = await this.doctorRepo.count({
+      where: {
+        active: true,
+      },
+    });
+  
+    const unavailableDoctors = await this.doctorRepo.count({
+      where: {
+        active: false,
+      },
+    });
+  
+    return {
+      totalDoctors,
+      totalDepartments: Number(totalDepartments),
+      availableDoctors,
+      unavailableDoctors,
+    };
   }
 }

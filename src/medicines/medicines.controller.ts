@@ -49,6 +49,25 @@ export class MedicinesController {
     }
   }
 
+  @Get('count')
+  async dashboardCounts() {
+    try {
+      const data = await this.medicinesService.getCardCounts();
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Dashboard counts fetched successfully',
+        data,
+      };
+    } catch (error) {
+      return {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: error.message || 'Failed to fetch dashboard counts',
+        data: null,
+      };
+    }
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     try {
@@ -98,4 +117,6 @@ export class MedicinesController {
       );
     }
   }
+
+  
 }

@@ -9,12 +9,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Patient } from './entities/patient.entity';
 import { Repository } from 'typeorm';
 import { AssignDoctorDto, UpdatePatientDto } from './dto/update-patient.dto';
+import { AppointmentStatus } from 'src/appointments/entities/appointment.entity';
+import { Appointment } from 'src/appointments/entities/appointment.entity';
 
 @Injectable()
 export class PatientService {
   constructor(
     @InjectRepository(Patient)
     private patientRepository: Repository<Patient>,
+    @InjectRepository(Appointment)
+    private appointmentRepository: Repository<Appointment>,
   ) {}
 
   async create(createPatientDto: CreatePatientDto) {
@@ -27,7 +31,9 @@ export class PatientService {
         state,
         country,
         pincode,
-        email
+        email,
+        age, 
+        gender
       } = createPatientDto;
 
       const patient = this.patientRepository.create({
@@ -38,7 +44,9 @@ export class PatientService {
         state,
         country,
         pincode,
-        email
+        email,
+        age, 
+        gender
       });
 
       return await this.patientRepository.save(patient);
@@ -196,5 +204,40 @@ export class PatientService {
         error.message || 'Assign doctor to Patient',
       );
     }
+  }
+
+  async getPatientCounts() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+  
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+  
+    const totalPatients = await this.patientRepository.count();
+  
+    const todayPatients = await this.patientRepository.count();
+      // .createQueryBuilder('patient')
+      // .leftJoin('patient.appointments', 'appointment')
+      // .where('appointment.createdAt >= :today', { today })
+      // .andWhere('appointment.createdAt < :tomorrow', { tomorrow })
+      // .getCount();
+  
+    const visitedPatients = await this.appointmentRepository.count({
+          where: {
+            status: AppointmentStatus.COMPLETED,
+          },
+        });
+      
+        const unvisitedPatients = await this.appointmentRepository.count({
+          where: {
+            status: AppointmentStatus.SCHEDULED,
+          },
+        });
+    return {
+      totalPatients,
+      todayPatients,
+      visitedPatients,
+      unvisitedPatients,
+    };
   }
 }
