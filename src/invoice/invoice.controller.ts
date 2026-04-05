@@ -63,6 +63,28 @@ export class InvoiceController {
     }
   }
 
+  @Get('count')
+  async getInvoiceStats() {
+
+    try {
+      const data = await this.invoiceService.getInvoiceStats();
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Invoice data fetched successfully',
+        data,
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: error.message || 'Failed to fetched invoice count',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     try {
