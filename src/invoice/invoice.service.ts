@@ -7,7 +7,7 @@ import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Invoice } from './entities/invoice.entity';
-import { DataSource, Repository } from 'typeorm';
+import { Between, DataSource, Repository } from 'typeorm';
 import { InvoiceMedicine } from 'src/invoice_medicines/entities/invoice_medicine.entity';
 
 @Injectable()
@@ -177,5 +177,49 @@ export class InvoiceService {
         message: 'Invoice deleted successfully',
       };
     });
+  }
+
+  async getInvoiceStats() {
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+
+    const [
+      totalInvoices,
+      todayInvoices,
+      totalRevenueResult,
+      todayRevenueResult,
+    ] = await Promise.all([
+      this.invoiceRepo.count(),
+
+      this.invoiceRepo.count({
+        where: {
+          createdAt: Between(startOfToday, endOfToday),
+        },
+      }),
+
+      this.invoiceRepo
+        .createQueryBuilder('invoice')
+        .select('SUM(invoice.totalPrice)', 'total')
+        .getRawOne(),
+
+      this.invoiceRepo
+        .createQueryBuilder('invoice')
+        .select('SUM(invoice.totalPrice)', 'total')
+        .where('invoice.createdAt BETWEEN :start AND :end', {
+          start: startOfToday,
+          end: endOfToday,
+        })
+        .getRawOne(),
+    ]);
+
+    return {
+      totalInvoices,
+      todayInvoices,
+      totalRevenue: Number(totalRevenueResult.total) || 0,
+      todayRevenue: Number(todayRevenueResult.total) || 0,
+    };
   }
 }
