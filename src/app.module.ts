@@ -39,4 +39,4 @@ import { HospitalModule } from './hospital/hospital.module';
     HospitalModule,
   ],
 })
-export class AppModule {}
+export class AppModule { }

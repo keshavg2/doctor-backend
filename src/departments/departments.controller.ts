@@ -16,7 +16,7 @@ import { UpdateDepartmentDto } from './dto/update-department.dto';
 
 @Controller('departments')
 export class DepartmentsController {
-  constructor(private readonly departmentsService: DepartmentsService) {}
+  constructor(private readonly departmentsService: DepartmentsService) { }
 
   @Post()
   async create(@Body() createDepartmentDto: CreateDepartmentDto) {
@@ -32,7 +32,7 @@ export class DepartmentsController {
 
   @Get()
   async findAll(@Query('page') page: number = 1,
-  @Query('limit') limit: number = 10,) {
+    @Query('limit') limit: number = 10,) {
     try {
       return await this.departmentsService.findAll(page, limit);
     } catch (error) {
@@ -101,6 +101,4 @@ export class DepartmentsController {
       );
     }
   }
-
-  
-}
+} 

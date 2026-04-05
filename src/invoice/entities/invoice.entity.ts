@@ -23,7 +23,7 @@ export class Invoice {
   patientId: number;
 
   @ManyToOne(() => Patient, { nullable: true, onDelete: 'SET NULL', })
-  @JoinColumn({ name: 'patientId'})
+  @JoinColumn({ name: 'patientId' })
   patient: Patient;
 
   @Column({ nullable: true })

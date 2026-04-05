@@ -10,7 +10,7 @@ import {
   RelationId,
   ManyToOne,
 } from 'typeorm';
-import {Role} from "../enums/role.enum"
+import { Role } from "../enums/role.enum"
 import { Doctor } from 'src/doctor/entities/doctor.entity';
 import { Patient } from 'src/patient/entities/patient.entity';
 import { Hospital } from 'src/hospital/entities/hospital.entity';

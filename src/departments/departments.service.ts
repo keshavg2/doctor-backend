@@ -20,7 +20,7 @@ export class DepartmentsService {
     private readonly doctorRepository: Repository<Doctor>,
     @InjectRepository(Appointment)
     private readonly appointmentRepository: Repository<Appointment>,
-  ) {}
+  ) { }
 
   async create(createDepartmentDto: CreateDepartmentDto) {
     try {
@@ -50,21 +50,21 @@ export class DepartmentsService {
       // const departments = await this.departmentRepository.find();
       const skip = (page - 1) * limit;
 
-    const [departments, total] = await this.departmentRepository.findAndCount({
-      order: {
-        id: 'DESC',
-      },
-      skip,
-      take: limit,
-    });
+      const [departments, total] = await this.departmentRepository.findAndCount({
+        order: {
+          id: 'DESC',
+        },
+        skip,
+        take: limit,
+      });
 
-    return {
-      departments,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-    };
+      return {
+        departments,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      };
 
       return {
         message: 'Departments fetched successfully',
@@ -139,21 +139,21 @@ export class DepartmentsService {
 
   async getDepartmentCounts() {
     const totalDepartments = await this.departmentRepository.count();
-  
+
     const totalDoctors = await this.doctorRepository.count();
-  
+
     const visitedPatients = await this.appointmentRepository.count({
       where: {
         status: AppointmentStatus.COMPLETED,
       },
     });
-  
+
     const unvisitedPatients = await this.appointmentRepository.count({
       where: {
         status: AppointmentStatus.SCHEDULED,
       },
     });
-  
+
     return {
       totalDoctors,
       totalDepartments,

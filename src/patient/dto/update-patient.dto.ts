@@ -34,7 +34,7 @@ export class UpdatePatientDto {
   gender: Gender;
 }
 
-export class AssignDoctorDto{
-    @IsNotEmpty()
-    doctorId: number
+export class AssignDoctorDto {
+  @IsNotEmpty()
+  doctorId: number
 }
