@@ -74,11 +74,13 @@ export class BedManagementController {
         data,
       };
     } catch (error) {
-      return {
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: error.message || 'Failed to fetch bed counts',
-        data: null,
-      };
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: error.message || 'Failed to fetch bed counts',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 

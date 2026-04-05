@@ -24,7 +24,7 @@ import { AssignDoctorDto, UpdatePatientDto } from './dto/update-patient.dto';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.Doctor)
 export class PatientController {
-  constructor(private readonly patientService: PatientService) {}
+  constructor(private readonly patientService: PatientService) { }
 
   @Post()
   async create(@Body() createPatientDto: CreatePatientDto) {
@@ -109,7 +109,7 @@ export class PatientController {
 
   @Patch(':id')
   async update(@Param('id') id: string,
-  @Body() updatePatientDto: UpdatePatientDto) {
+    @Body() updatePatientDto: UpdatePatientDto) {
     try {
       const data = await this.patientService.findOneAndUpdate(+id, updatePatientDto);
       return {
@@ -150,7 +150,7 @@ export class PatientController {
 
   @Patch(':id/assignDoctor')
   async assignDoctor(@Param('id') id: string,
-  @Body() assignDoctorDto: AssignDoctorDto) {
+    @Body() assignDoctorDto: AssignDoctorDto) {
     try {
       const data = await this.patientService.assignDoctortoPatient(+id, assignDoctorDto);
       return {
@@ -168,6 +168,4 @@ export class PatientController {
       );
     }
   }
-
-  
 }

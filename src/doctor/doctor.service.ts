@@ -17,7 +17,7 @@ export class DoctorService {
     private readonly doctorRepo: Repository<Doctor>,
     @InjectRepository(Department)
     private readonly departmentRepo: Repository<Department>,
-  ) {}
+  ) { }
 
   async create(createDoctorDto: CreateDoctorDto) {
     try {
@@ -42,6 +42,9 @@ export class DoctorService {
       const skip = (page - 1) * limit;
 
       const [doctors, total] = await this.doctorRepo.findAndCount({
+        where: {
+          active: true,
+        },
         relations: ['department'],
         order: {
           id: 'DESC',
@@ -118,27 +121,32 @@ export class DoctorService {
   }
 
   async getDoctorCounts() {
-    const totalDoctors = await this.doctorRepo.count();
-  
-    const totalDepartments = await this.departmentRepo.count();
-  
-    const availableDoctors = await this.doctorRepo.count({
-      where: {
-        active: true,
-      },
-    });
-  
-    const unavailableDoctors = await this.doctorRepo.count({
-      where: {
-        active: false,
-      },
-    });
-  
-    return {
-      totalDoctors,
-      totalDepartments: Number(totalDepartments),
-      availableDoctors,
-      unavailableDoctors,
-    };
+    try {
+      const totalDoctors = await this.doctorRepo.count();
+
+      const totalDepartments = await this.departmentRepo.count();
+
+      const availableDoctors = await this.doctorRepo.count({
+        where: {
+          active: true,
+        },
+      });
+
+      const unavailableDoctors = await this.doctorRepo.count({
+        where: {
+          active: false,
+        },
+      });
+
+      return {
+        totalDoctors,
+        totalDepartments: Number(totalDepartments),
+        availableDoctors,
+        unavailableDoctors,
+      };
+    }
+    catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 }

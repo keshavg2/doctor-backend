@@ -19,7 +19,7 @@ export class DashboardService {
 
     @InjectRepository(BedManagement)
     private readonly bedRepository: Repository<BedManagement>,
-  ) {}
+  ) { }
 
   create(createDashboardDto: CreateDashboardDto) {
     return 'This action adds a new dashboard';

@@ -70,11 +70,13 @@ export class AppointmentsController {
         data,
       };
     } catch (error) {
-      return {
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: error.message || 'Failed to fetch appointment counts',
-        data: null,
-      };
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: error.message || 'Failed to fetch appointment counts',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 

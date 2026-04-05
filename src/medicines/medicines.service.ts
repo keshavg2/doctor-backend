@@ -11,87 +11,87 @@ export class MedicinesService {
   constructor(
     @InjectRepository(Medicine)
     private readonly medicineRepo: Repository<Medicine>,
-  ) {}
+  ) { }
 
   /** CREATE */
   async create(createMedicineDto: CreateMedicineDto) {
-    try{
-    const medicine = this.medicineRepo.create(createMedicineDto);
-    return this.medicineRepo.save(medicine);
-    }catch(e){
+    try {
+      const medicine = this.medicineRepo.create(createMedicineDto);
+      return this.medicineRepo.save(medicine);
+    } catch (e) {
       console.log('issue in creating the medicine', e)
-      throw(e)
+      throw (e)
     }
   }
 
   /** LIST ALL */
   async findAll(page: number = 1, limit: number = 10) {
-    try{
+    try {
 
-    const skip = (page - 1) * limit;
+      const skip = (page - 1) * limit;
 
-    const [medicines, total] = await this.medicineRepo.findAndCount({
-      where: { isActive: true },
-      order: { createdAt: 'DESC' },
-      skip,
-      take: limit,
-    });
+      const [medicines, total] = await this.medicineRepo.findAndCount({
+        where: { isActive: true },
+        order: { createdAt: 'DESC' },
+        skip,
+        take: limit,
+      });
 
-    return {
-      medicines,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-    };
-  }catch(e){
-    console.log('Fetching the list of the medicine', e)
-    throw(e)
-  }
+      return {
+        medicines,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      };
+    } catch (e) {
+      console.log('Fetching the list of the medicine', e)
+      throw (e)
+    }
   }
 
   /** GET ONE */
   async findOne(id: number) {
-    try{
-    const medicine = await this.medicineRepo.findOne({
-      where: { id },
-    });
+    try {
+      const medicine = await this.medicineRepo.findOne({
+        where: { id },
+      });
 
-    if (!medicine) {
-      throw new NotFoundException('Medicine not found');
+      if (!medicine) {
+        throw new NotFoundException('Medicine not found');
+      }
+
+      return medicine;
+    } catch (e) {
+      console.log('throw error in find One api in medicine', e)
+      throw (e)
     }
-
-    return medicine;
-  }catch(e){
-    console.log('throw error in find One api in medicine', e)
-    throw(e)
-  }
   }
 
   /** UPDATE */
   async update(id: number, updateMedicineDto: UpdateMedicineDto) {
-    try{
-    const medicine = await this.findOne(id);
+    try {
+      const medicine = await this.findOne(id);
 
-    Object.assign(medicine, updateMedicineDto);
-    return this.medicineRepo.save(medicine);
-  }catch(e){
-    console.log('throw error in update api in medicine', e)
-    throw(e)
-  }
+      Object.assign(medicine, updateMedicineDto);
+      return this.medicineRepo.save(medicine);
+    } catch (e) {
+      console.log('throw error in update api in medicine', e)
+      throw (e)
+    }
   }
 
   /** DELETE (Soft delete recommended) */
   async remove(id: number) {
-    try{ 
-    const medicine = await this.findOne(id);
+    try {
+      const medicine = await this.findOne(id);
 
-    medicine.isActive = false;
-    return this.medicineRepo.save(medicine);
-  }catch(e){
-    console.log('Error in delting the medicine api', e)
-    throw(e)
-  }
+      medicine.isActive = false;
+      return this.medicineRepo.save(medicine);
+    } catch (e) {
+      console.log('Error in delting the medicine api', e)
+      throw (e)
+    }
   }
 
   async getCardCounts() {

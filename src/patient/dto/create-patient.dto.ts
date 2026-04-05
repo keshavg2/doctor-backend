@@ -29,7 +29,7 @@ export class CreatePatientDto {
 
   @IsOptional()
   age: number;
-  
+
   @IsOptional()
   gender: Gender;
 }

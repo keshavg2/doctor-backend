@@ -20,9 +20,9 @@ export class CreateMedicineDto {
   quantity: number;
 
   @IsNumber()
-  price: number; 
+  price: number;
 
   @IsOptional()
-@IsEnum(MedicineStatus)
-status?: MedicineStatus;
+  @IsEnum(MedicineStatus)
+  status?: MedicineStatus;
 }

@@ -20,7 +20,7 @@ export class InvoiceService {
 
     @InjectRepository(InvoiceMedicine)
     private readonly invoiceMedicineRepo: Repository<InvoiceMedicine>,
-  ) {}
+  ) { }
 
   async create(createInvoiceDto: CreateInvoiceDto) {
     const { patientId, doctorId, medicines } = createInvoiceDto;
@@ -76,7 +76,7 @@ export class InvoiceService {
         skip,
         take: limit,
       });
-  
+
       return {
         invoices,
         total,

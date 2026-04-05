@@ -6,31 +6,31 @@ import { MedicineListDto } from './dto/medicine-list.dto';
 
 @Controller('medicines')
 export class MedicinesController {
-  constructor(private readonly medicinesService: MedicinesService) {}
+  constructor(private readonly medicinesService: MedicinesService) { }
 
   @Post()
   async create(@Body() createMedicineDto: CreateMedicineDto) {
     try {
-          const data = await this.medicinesService.create(createMedicineDto);
-          return {
-            statusCode: HttpStatus.OK,
-            message: 'Medicine created successfully',
-            data,
-          };
-        } catch (error) {
-          throw new HttpException(
-            {
-              statusCode: HttpStatus.BAD_REQUEST,
-              message: error.message || 'Failed to create medicines',
-            },
-            HttpStatus.BAD_REQUEST,
-          );
-        }
+      const data = await this.medicinesService.create(createMedicineDto);
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Medicine created successfully',
+        data,
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: error.message || 'Failed to create medicines',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   @Get()
   async findAll(@Query('page') page: number = 1,
-  @Query('limit') limit: number = 10,) {
+    @Query('limit') limit: number = 10,) {
     try {
       const data = await this.medicinesService.findAll(page, limit);
       return {
@@ -60,11 +60,13 @@ export class MedicinesController {
         data,
       };
     } catch (error) {
-      return {
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: error.message || 'Failed to fetch dashboard counts',
-        data: null,
-      };
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: error.message || 'Failed to fetch medicines count',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -90,24 +92,24 @@ export class MedicinesController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateMedicineDto: UpdateMedicineDto) {
-    try{
-    return this.medicinesService.update(+id, updateMedicineDto);
-  }catch(error){
-    throw new HttpException(
-      {
-        statusCode: HttpStatus.BAD_REQUEST,
-        message: error.message || 'Failed to Update medicines',
-      },
-      HttpStatus.BAD_REQUEST,
-    );
-  }
+    try {
+      return this.medicinesService.update(+id, updateMedicineDto);
+    } catch (error) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: error.message || 'Failed to Update medicines',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    try{
-    return this.medicinesService.remove(+id);
-    } catch(error){
+    try {
+      return this.medicinesService.remove(+id);
+    } catch (error) {
       throw new HttpException(
         {
           statusCode: HttpStatus.BAD_REQUEST,
@@ -117,6 +119,4 @@ export class MedicinesController {
       );
     }
   }
-
-  
 }

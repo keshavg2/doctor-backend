@@ -16,7 +16,7 @@ import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 
 @Controller('invoice')
 export class InvoiceController {
-  constructor(private readonly invoiceService: InvoiceService) {}
+  constructor(private readonly invoiceService: InvoiceService) { }
 
   @Post()
   async create(@Body() createInvoiceDto: CreateInvoiceDto) {
@@ -42,7 +42,7 @@ export class InvoiceController {
   @Get()
   async findAll(
     @Query('page') page: number = 1,
-      @Query('limit') limit: number = 10,
+    @Query('limit') limit: number = 10,
   ) {
     try {
       const data = await this.invoiceService.findAll(page, limit);
