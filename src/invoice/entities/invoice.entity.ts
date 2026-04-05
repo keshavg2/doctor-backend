@@ -47,7 +47,7 @@ export class Invoice {
   @OneToMany(
     () => InvoiceMedicine,
     (invoiceMedicine) => invoiceMedicine.invoice,
-    { cascade: true },
+    { cascade: true, nullable: true },
   )
   medicines: InvoiceMedicine[];
 

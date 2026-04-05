@@ -13,11 +13,12 @@ export class InvoiceMedicine {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ nullable: true})
   invoiceId: number;
 
   @ManyToOne(() => Invoice, (invoice) => invoice.medicines, {
     onDelete: 'CASCADE',
+    nullable: true,
   })
   @JoinColumn({ name: 'invoiceId' })
   invoice: Invoice;
