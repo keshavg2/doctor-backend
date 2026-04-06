@@ -12,19 +12,29 @@ import { BedManagementModule } from './bed_management/bed_management.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { DepartmentsModule } from './departments/departments.module';
 import { HospitalModule } from './hospital/hospital.module';
+import { env } from 'process';
+
+
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: 'india@123',
-      database: 'doctor-backend',
-      autoLoadEntities: true,
-      synchronize: true,
-    }),
+  TypeOrmModule.forRoot({
+  type: 'postgres',
+  host: process.env.DB_HOST,
+  port: parseInt(process.env.DB_PORT || '5432'),
+  username: process.env.DB_USERNAME,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
+  autoLoadEntities: true,
+  synchronize: true,  
+  ssl: {
+    rejectUnauthorized: false,
+  }
+}),
+    
+    
     UserModule,
     AuthModule,
     PatientModule,
