@@ -14,9 +14,9 @@ export class MedicinesService {
   ) { }
 
   /** CREATE */
-  async create(createMedicineDto: CreateMedicineDto) {
+  async create(createMedicineDto: CreateMedicineDto, user: any) {
     try {
-      const medicine = this.medicineRepo.create(createMedicineDto);
+      const medicine = this.medicineRepo.create({ ...createMedicineDto, createdBy: { id: user.userId }, hospitalId: user.hospitalId });
       return this.medicineRepo.save(medicine);
     } catch (e) {
       console.log('issue in creating the medicine', e)
@@ -25,13 +25,12 @@ export class MedicinesService {
   }
 
   /** LIST ALL */
-  async findAll(page: number = 1, limit: number = 10) {
+  async findAll(page: number = 1, limit: number = 10, user: any) {
     try {
-
       const skip = (page - 1) * limit;
 
       const [medicines, total] = await this.medicineRepo.findAndCount({
-        where: { isActive: true },
+        where: { isActive: true, hospitalId: user.hospitalId },
         order: { createdAt: 'DESC' },
         skip,
         take: limit,
@@ -94,19 +93,22 @@ export class MedicinesService {
     }
   }
 
-  async getCardCounts() {
-    const totalMedicines = await this.medicineRepo.count();
+  async getCardCounts(user: any) {
+    const totalMedicines = await this.medicineRepo.count({ where: { hospitalId: user.hospitalId } });
 
     const available = await this.medicineRepo.count({
-      where: { status: MedicineStatus.AVAILABLE },
+      where: {
+        status: MedicineStatus.AVAILABLE,
+        hospitalId: user.hospitalId
+      },
     });
 
     const lowStock = await this.medicineRepo.count({
-      where: { status: MedicineStatus.LOW_STOCK },
+      where: { status: MedicineStatus.LOW_STOCK, hospitalId: user.hospitalId },
     });
 
     const critical = await this.medicineRepo.count({
-      where: { status: MedicineStatus.CRITICAL },
+      where: { status: MedicineStatus.CRITICAL, hospitalId: user.hospitalId },
     });
 
     return {

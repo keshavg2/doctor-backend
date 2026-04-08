@@ -25,9 +25,12 @@ export class DashboardService {
     return 'This action adds a new dashboard';
   }
 
-  async recentPatientList() {
+  async recentPatientList(user: any) {
     try {
       return await this.patientRepository.find({
+        where: {
+          hospitalId: user.hospitalId
+        },
         order: { createdAt: 'DESC' },
         take: 4,
       });
@@ -37,9 +40,12 @@ export class DashboardService {
     }
   }
 
-  async recentAppointmentList() {
+  async recentAppointmentList(user: any) {
     try {
       return await this.appointmentRepository.find({
+        where: {
+          hospitalId: user.hospitalId
+        },
         order: { createdAt: 'DESC' },
         take: 4,
         relations: ['patient', 'doctor'], // optional
@@ -50,7 +56,7 @@ export class DashboardService {
     }
   }
 
-  async getDashboardCounts() {
+  async getDashboardCounts(user: any) {
     try {
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
@@ -63,10 +69,15 @@ export class DashboardService {
         todayAppointments,
         availableBeds,
       ] = await Promise.all([
-        this.patientRepository.count(),
+        this.patientRepository.count({
+          where: {
+            hospitalId: user.hospitalId
+          }
+        }),
 
         this.appointmentRepository.count({
           where: {
+            hospitalId: user.hospitalId,
             appointmentDate: Between(todayStart, todayEnd),
           },
         }),
@@ -74,6 +85,7 @@ export class DashboardService {
         this.bedRepository.count({
           where: {
             status: BedStatus.AVAILABLE,
+            hospitalId: user.hospitalId
           },
         }),
       ]);

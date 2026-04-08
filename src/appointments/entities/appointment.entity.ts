@@ -2,71 +2,77 @@ import { Doctor } from 'src/doctor/entities/doctor.entity';
 import { Patient } from 'src/patient/entities/patient.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
-    Entity,
-    PrimaryGeneratedColumn,
-    Column,
-    CreateDateColumn,
-    UpdateDateColumn,
-    ManyToOne,
-    JoinColumn,
-  } from 'typeorm';
-  
-  export enum AppointmentStatus {
-    SCHEDULED = 'scheduled',
-    COMPLETED = 'completed',
-    CANCELLED = 'cancelled',
-  }
-  
-  export enum AppointmentType {
-    CONSULTATION = 'consultation',
-    FOLLOW_UP = 'follow_up',
-    EMERGENCY = 'emergency',
-  }
-  
-  @Entity('appointments')
-  export class Appointment {
-    @PrimaryGeneratedColumn()
-    id: number;
-  
-    @Column({ type: 'int' , nullable: true })
-    patientId: number;
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 
-    @ManyToOne(() => Patient, { eager: false, nullable: true, onDelete: 'SET NULL', })
-    @JoinColumn({ name: 'patientId' })
-    patient: User;
+export enum AppointmentStatus {
+  SCHEDULED = 'scheduled',
+  COMPLETED = 'completed',
+  CANCELLED = 'cancelled',
+}
 
-    /* ---------------- Doctor ---------------- */
-    @Column({ type: 'int', nullable: true })
-    doctorId: number;
+export enum AppointmentType {
+  CONSULTATION = 'consultation',
+  FOLLOW_UP = 'follow_up',
+  EMERGENCY = 'emergency',
+}
 
-    @ManyToOne(() => Doctor, { eager: false, nullable: true, onDelete: 'SET NULL', })
-    @JoinColumn({ name: 'doctorId' })
-    doctor: User;
-  
-    @Column({ type: 'timestamp' })
-    appointmentDate: Date;
-  
-    @Column({
-      type: 'enum',
-      enum: AppointmentType,
-      default: AppointmentType.CONSULTATION,
-    })
-    type: AppointmentType;
-  
-    @Column({
-      type: 'enum',
-      enum: AppointmentStatus,
-      default: AppointmentStatus.SCHEDULED,
-    })
-    status: AppointmentStatus;
-  
-    @Column({ type: 'text', nullable: true })
-    notes?: string;
-  
-    @CreateDateColumn({ type: 'timestamp' })
-    createdAt: Date;
-  
-    @UpdateDateColumn({ type: 'timestamp' })
-    updatedAt: Date;
-  }
-  
+@Entity('appointments')
+export class Appointment {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column({ type: 'int', nullable: true })
+  patientId: number;
+
+  @ManyToOne(() => Patient, { eager: false, nullable: true, onDelete: 'SET NULL', })
+  @JoinColumn({ name: 'patientId' })
+  patient: User;
+
+  /* ---------------- Doctor ---------------- */
+  @Column({ type: 'int', nullable: true })
+  doctorId: number;
+
+  @ManyToOne(() => Doctor, { eager: false, nullable: true, onDelete: 'SET NULL', })
+  @JoinColumn({ name: 'doctorId' })
+  doctor: User;
+
+  @Column({ type: 'timestamp' })
+  appointmentDate: Date;
+
+  @Column({
+    type: 'enum',
+    enum: AppointmentType,
+    default: AppointmentType.CONSULTATION,
+  })
+  type: AppointmentType;
+
+  @Column({
+    type: 'enum',
+    enum: AppointmentStatus,
+    default: AppointmentStatus.SCHEDULED,
+  })
+  status: AppointmentStatus;
+
+  @Column({ type: 'text', nullable: true })
+  notes?: string;
+
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'created_by' })
+  createdBy: User;
+
+  @Column({ name: 'hospital_id', nullable: true })
+  hospitalId: number;
+
+  @CreateDateColumn({ type: 'timestamp' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ type: 'timestamp' })
+  updatedAt: Date;
+}

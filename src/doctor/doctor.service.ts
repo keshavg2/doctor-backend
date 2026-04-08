@@ -19,7 +19,7 @@ export class DoctorService {
     private readonly departmentRepo: Repository<Department>,
   ) { }
 
-  async create(createDoctorDto: CreateDoctorDto) {
+  async create(createDoctorDto: CreateDoctorDto, user: any) {
     try {
       const existingDoctor = await this.doctorRepo.findOne({
         where: { email: createDoctorDto.email },
@@ -29,7 +29,7 @@ export class DoctorService {
         throw new BadRequestException('Doctor email already exists');
       }
 
-      const doctor = this.doctorRepo.create(createDoctorDto);
+      const doctor = this.doctorRepo.create({ ...createDoctorDto, createdBy: { id: user.userId }, hospitalId: user.hospitalId });
 
       return await this.doctorRepo.save(doctor);
     } catch (error) {
@@ -37,13 +37,14 @@ export class DoctorService {
     }
   }
 
-  async findAll(page: number = 1, limit: number = 10) {
+  async findAll(page: number = 1, limit: number = 10, user: any) {
     try {
       const skip = (page - 1) * limit;
 
       const [doctors, total] = await this.doctorRepo.findAndCount({
         where: {
           active: true,
+          hospitalId: user?.hospitalId
         },
         relations: ['department'],
         order: {
@@ -120,21 +121,27 @@ export class DoctorService {
     }
   }
 
-  async getDoctorCounts() {
+  async getDoctorCounts(user: any) {
     try {
-      const totalDoctors = await this.doctorRepo.count();
+      const totalDoctors = await this.doctorRepo.count({
+        where: {
+          hospitalId: user.hospitalId,
+        }
+      });
 
-      const totalDepartments = await this.departmentRepo.count();
+      const totalDepartments = await this.departmentRepo.count({ where: { hospitalId: user.hospitalId } });
 
       const availableDoctors = await this.doctorRepo.count({
         where: {
           active: true,
+          hospitalId: user.hospitalId,
         },
       });
 
       const unavailableDoctors = await this.doctorRepo.count({
         where: {
           active: false,
+          hospitalId: user.hospitalId,
         },
       });
 

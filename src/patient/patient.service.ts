@@ -7,10 +7,11 @@ import { CreatePatientDto } from './dto/create-patient.dto';
 import { PatientListFilterDto } from './dto/patient-list-filter.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Patient } from './entities/patient.entity';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { AssignDoctorDto, UpdatePatientDto } from './dto/update-patient.dto';
 import { AppointmentStatus } from 'src/appointments/entities/appointment.entity';
 import { Appointment } from 'src/appointments/entities/appointment.entity';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class PatientService {
@@ -21,7 +22,7 @@ export class PatientService {
     private appointmentRepository: Repository<Appointment>,
   ) { }
 
-  async create(createPatientDto: CreatePatientDto) {
+  async create(createPatientDto: CreatePatientDto, user: any) {
     try {
       const {
         name,
@@ -33,9 +34,10 @@ export class PatientService {
         pincode,
         email,
         age,
-        gender
+        gender,
       } = createPatientDto;
 
+      console.log(user);
       const patient = this.patientRepository.create({
         name,
         phone,
@@ -46,7 +48,9 @@ export class PatientService {
         pincode,
         email,
         age,
-        gender
+        gender,
+        createdBy: {id: user.userId},
+        hospitalId: user.hospitalId,
       });
 
       return await this.patientRepository.save(patient);
@@ -57,7 +61,7 @@ export class PatientService {
     }
   }
 
-  async findAll(filter: PatientListFilterDto) {
+  async findAll(filter: PatientListFilterDto, user: any) {
     try {
       const {
         search,
@@ -71,6 +75,8 @@ export class PatientService {
         sortBy = 'createdAt',
         sortOrder = 'DESC',
       } = filter;
+
+      const hospitalId = user?.hospitalId
 
       const qb = this.patientRepository
         .createQueryBuilder('patient')
@@ -104,6 +110,10 @@ export class PatientService {
 
       if (pincode) {
         qb.andWhere('patient.pincode = :pincode', { pincode });
+      }
+
+      if(hospitalId){
+        qb.andWhere('patient.hospitalId = :hospitalId', {hospitalId})
       }
 
       qb.orderBy(`patient.${sortBy}`, sortOrder);
@@ -206,31 +216,35 @@ export class PatientService {
     }
   }
 
-  async getPatientCounts() {
+  async getPatientCounts(user: any) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
 
-    const totalPatients = await this.patientRepository.count();
+    const totalPatients = await this.patientRepository.count({
+      where: {
+        hospitalId: user.hospitalId,
+      }});
 
-    const todayPatients = await this.patientRepository.count();
-    // .createQueryBuilder('patient')
-    // .leftJoin('patient.appointments', 'appointment')
-    // .where('appointment.createdAt >= :today', { today })
-    // .andWhere('appointment.createdAt < :tomorrow', { tomorrow })
-    // .getCount();
+    const todayPatients = await this.patientRepository.count({
+      where: {
+        hospitalId: user.hospitalId,
+        createdAt: Between(today, tomorrow),
+      }});
 
     const visitedPatients = await this.appointmentRepository.count({
       where: {
         status: AppointmentStatus.COMPLETED,
+        hospitalId: user.hospitalId,
       },
     });
 
     const unvisitedPatients = await this.appointmentRepository.count({
       where: {
         status: AppointmentStatus.SCHEDULED,
+        hospitalId: user.hospitalId,
       },
     });
     return {

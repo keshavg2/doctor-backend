@@ -1,15 +1,19 @@
-import { Controller, Get, Post, Body, HttpStatus, HttpException } from '@nestjs/common';
+import { Controller, Get, Post, Body, HttpStatus, HttpException, UseGuards, Req } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
 import { CreateDashboardDto } from './dto/create-dashboard.dto';
+import { AuthGuard } from '@nestjs/passport';
+import type { AuthRequest } from 'src/common/interfaces/auth-request.interface';
 
 @Controller('dashboard')
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) { }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get('recent-patient')
-  async recentPatientList() {
+  async recentPatientList(@Req() req: AuthRequest) {
     try {
-      const data = await this.dashboardService.recentPatientList();
+      const user = req.user;
+      const data = await this.dashboardService.recentPatientList(user);
 
       return {
         statusCode: HttpStatus.OK,
@@ -27,10 +31,12 @@ export class DashboardController {
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get('recent-appointment')
-  async recentAppointmentList() {
+  async recentAppointmentList(@Req() req: AuthRequest) {
     try {
-      const data = await this.dashboardService.recentAppointmentList();
+      const user = req.user;
+      const data = await this.dashboardService.recentAppointmentList(user);
 
       return {
         statusCode: HttpStatus.OK,
@@ -48,10 +54,12 @@ export class DashboardController {
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get('count')
-  async dashboardCounts() {
+  async dashboardCounts(@Req() req: AuthRequest) {
     try {
-      const data = await this.dashboardService.getDashboardCounts();
+      const user = req.user;
+      const data = await this.dashboardService.getDashboardCounts(user);
 
       return {
         statusCode: HttpStatus.OK,

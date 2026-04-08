@@ -1,4 +1,5 @@
 import { Doctor } from 'src/doctor/entities/doctor.entity';
+import { User } from 'src/user/entities/user.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -6,6 +7,8 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 
 @Entity('departments')
@@ -21,6 +24,13 @@ export class Department {
 
   @Column({ default: true })
   isActive: boolean;
+
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'created_by' })
+  createdBy: User;
+
+  @Column({ name: 'hospital_id', nullable: true })
+  hospitalId: number;
 
   @CreateDateColumn()
   createdAt: Date;

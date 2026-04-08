@@ -9,19 +9,25 @@ import {
   HttpStatus,
   HttpException,
   Query,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { InvoiceService } from './invoice.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
+import { AuthGuard } from '@nestjs/passport';
+import type { AuthRequest } from 'src/common/interfaces/auth-request.interface';
 
 @Controller('invoice')
 export class InvoiceController {
   constructor(private readonly invoiceService: InvoiceService) { }
 
+  @UseGuards(AuthGuard('jwt'))
   @Post()
-  async create(@Body() createInvoiceDto: CreateInvoiceDto) {
+  async create(@Body() createInvoiceDto: CreateInvoiceDto, @Req() req: AuthRequest) {
     try {
-      const data = await this.invoiceService.create(createInvoiceDto);
+      const user = req.user;
+      const data = await this.invoiceService.create(createInvoiceDto, user);
 
       return {
         statusCode: HttpStatus.OK,
@@ -39,13 +45,16 @@ export class InvoiceController {
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get()
   async findAll(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
+    @Req() req: AuthRequest
   ) {
     try {
-      const data = await this.invoiceService.findAll(page, limit);
+      const user = req.user;
+      const data = await this.invoiceService.findAll(page, limit, user);
 
       return {
         statusCode: HttpStatus.OK,
@@ -63,11 +72,12 @@ export class InvoiceController {
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get('count')
-  async getInvoiceStats() {
-
+  async getInvoiceStats(@Req() req: AuthRequest) {
     try {
-      const data = await this.invoiceService.getInvoiceStats();
+      const user = req.user;
+      const data = await this.invoiceService.getInvoiceStats(user);
 
       return {
         statusCode: HttpStatus.OK,

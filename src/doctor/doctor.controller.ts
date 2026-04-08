@@ -9,19 +9,26 @@ import {
   HttpStatus,
   HttpException,
   Query,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { DoctorService } from './doctor.service';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
+import { AuthGuard } from '@nestjs/passport/dist/auth.guard';
+import type { AuthRequest } from 'src/common/interfaces/auth-request.interface';
+
 
 @Controller('doctor')
 export class DoctorController {
   constructor(private readonly doctorService: DoctorService) { }
 
+  @UseGuards(AuthGuard('jwt'))
   @Post()
-  async create(@Body() createDoctorDto: CreateDoctorDto) {
+  async create(@Body() createDoctorDto: CreateDoctorDto, @Req() req: AuthRequest) {
     try {
-      const data = await this.doctorService.create(createDoctorDto);
+      const user = req.user
+      const data = await this.doctorService.create(createDoctorDto, user);
 
       return {
         statusCode: HttpStatus.OK,
@@ -39,13 +46,16 @@ export class DoctorController {
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get()
   async findAll(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
+    @Req() req: AuthRequest
   ) {
     try {
-      const data = await this.doctorService.findAll(page, limit);
+      const user = req.user;
+      const data = await this.doctorService.findAll(page, limit, user);
 
       return {
         statusCode: HttpStatus.OK,
@@ -63,10 +73,12 @@ export class DoctorController {
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get('count')
-  async getCounts() {
+  async getCounts(@Req() req: AuthRequest) {
     try {
-      const data = await this.doctorService.getDoctorCounts();
+      const user = req.user;
+      const data = await this.doctorService.getDoctorCounts(user);
       return {
         statusCode: HttpStatus.OK,
         message: 'Patient Count',

@@ -19,9 +19,10 @@ export class BedManagementService {
   // CREATE
   async create(
     createBedManagementDto: CreateBedManagementDto,
+    user: any
   ): Promise<BedManagement> {
     try {
-      const bed = this.bedRepository.create(createBedManagementDto);
+      const bed = this.bedRepository.create({ ...createBedManagementDto, createdBy: { id: user.userId }, hospitalId: user.hospitalId });
       return await this.bedRepository.save(bed);
     } catch (error) {
       throw new BadRequestException(
@@ -31,11 +32,14 @@ export class BedManagementService {
   }
 
   // FIND ALL
-  async findAll(page: number = 1, limit: number = 10) {
+  async findAll(page: number = 1, limit: number = 10, user:any) {
     try {
       const skip = (page - 1) * limit;
       // return await this.bedRepository.find();
       const [beds, total] = await this.bedRepository.findAndCount({
+        where: {
+          hospitalId: user.hospitalId
+        },
         order: {
           id: 'DESC',
         },
@@ -115,19 +119,29 @@ export class BedManagementService {
     }
   }
 
-  async getCardCounts() {
-    const totalBeds = await this.bedRepository.count();
+  async getCardCounts(user: any) {
+    const totalBeds = await this.bedRepository.count({
+      where: {
+        hospitalId: user.hospitalId,
+      }
+    });
 
     const available = await this.bedRepository.count({
-      where: { status: BedStatus.AVAILABLE },
+      where: { status: BedStatus.AVAILABLE,
+        hospitalId: user.hospitalId,
+       },
     });
 
     const occupied = await this.bedRepository.count({
-      where: { status: BedStatus.OCCUPIED },
+      where: { status: BedStatus.OCCUPIED,
+        hospitalId: user.hospitalId,
+       },
     });
 
     const maintenance = await this.bedRepository.count({
-      where: { status: BedStatus.MAINTENANCE },
+      where: { status: BedStatus.MAINTENANCE,
+        hospitalId: user.hospitalId,
+       },
     });
 
     return {

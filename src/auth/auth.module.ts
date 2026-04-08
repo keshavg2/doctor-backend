@@ -9,6 +9,7 @@ import { HospitalModule } from 'src/hospital/hospital.module';
 import { HospitalService } from 'src/hospital/hospital.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Hospital } from 'src/hospital/entities/hospital.entity';
+import { User } from 'src/user/entities/user.entity';
 
 
 @Module({
@@ -20,7 +21,7 @@ import { Hospital } from 'src/hospital/entities/hospital.entity';
       secret: process.env.JWT_SECRET || 'secretKey',
       signOptions: { expiresIn: '1d' },
     }),
-    TypeOrmModule.forFeature([Hospital])
+    TypeOrmModule.forFeature([Hospital, User])
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, HospitalService],
