@@ -62,6 +62,13 @@ export class Doctor {
   @OneToOne(() => User, (user) => user.doctor)
   user: User;
 
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'created_by' })
+  createdBy: User;
+
+  @Column({ name: 'hospital_id', nullable: true })
+  hospitalId: number;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

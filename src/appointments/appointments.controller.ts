@@ -9,19 +9,25 @@ import {
   HttpStatus,
   HttpException,
   Query,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
+import { AuthGuard } from '@nestjs/passport';
+import type { AuthRequest } from 'src/common/interfaces/auth-request.interface';
 
 @Controller('appointments')
 export class AppointmentsController {
   constructor(private readonly appointmentsService: AppointmentsService) {}
 
+  @UseGuards(AuthGuard('jwt'))
   @Post()
-  async create(@Body() createAppointmentDto: CreateAppointmentDto) {
+  async create(@Body() createAppointmentDto: CreateAppointmentDto,@Req() req: AuthRequest) {
     try {
-      const data = await this.appointmentsService.create(createAppointmentDto);
+      const user = req.user;
+      const data = await this.appointmentsService.create(createAppointmentDto, user);
       return {
         statusCode: HttpStatus.OK,
         message: 'Appointment created successfully',
@@ -38,11 +44,13 @@ export class AppointmentsController {
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get()
   async findAll(@Query('page') page: number = 1,
-  @Query('limit') limit: number = 10,) {
+  @Query('limit') limit: number = 10, @Req() req: AuthRequest) {
     try {
-      const data = await this.appointmentsService.findAll(page, limit);
+      const user = req.user;
+      const data = await this.appointmentsService.findAll(page, limit, user);
       return {
         statusCode: HttpStatus.OK,
         message: 'Appointments fetched successfully',
@@ -59,10 +67,12 @@ export class AppointmentsController {
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get('count')
-  async dashboardCounts() {
+  async dashboardCounts(@Req() req: AuthRequest) {
     try {
-      const data = await this.appointmentsService.getCardCounts();
+      const user = req.user;
+      const data = await this.appointmentsService.getCardCounts(user);
 
       return {
         statusCode: HttpStatus.OK,

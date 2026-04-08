@@ -9,19 +9,25 @@ import {
   HttpException,
   HttpStatus,
   Query,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { DepartmentsService } from './departments.service';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
+import { AuthGuard } from '@nestjs/passport/dist/auth.guard';
+import type { AuthRequest } from 'src/common/interfaces/auth-request.interface';
 
 @Controller('departments')
 export class DepartmentsController {
   constructor(private readonly departmentsService: DepartmentsService) { }
 
+  @UseGuards(AuthGuard('jwt'))
   @Post()
-  async create(@Body() createDepartmentDto: CreateDepartmentDto) {
+  async create(@Body() createDepartmentDto: CreateDepartmentDto,  @Req() req: AuthRequest) {
     try {
-      return await this.departmentsService.create(createDepartmentDto);
+      const user =  req.user;
+      return await this.departmentsService.create(createDepartmentDto, user);
     } catch (error) {
       throw new HttpException(
         error.message || 'Failed to create department',
@@ -30,11 +36,13 @@ export class DepartmentsController {
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get()
   async findAll(@Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,) {
+    @Query('limit') limit: number = 10,  @Req() req: AuthRequest) {
     try {
-      return await this.departmentsService.findAll(page, limit);
+      const user =  req.user;
+      return await this.departmentsService.findAll(page, limit, user);
     } catch (error) {
       throw new HttpException(
         error.message || 'Failed to fetch departments',
@@ -43,10 +51,12 @@ export class DepartmentsController {
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get('count')
-  async getCounts() {
+  async getCounts(@Req() req: AuthRequest) {
     try {
-      const data = await this.departmentsService.getDepartmentCounts();
+      const user =  req.user;
+      const data = await this.departmentsService.getDepartmentCounts(user);
       return {
         statusCode: HttpStatus.OK,
         message: 'Patient Count',

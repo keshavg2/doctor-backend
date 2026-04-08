@@ -9,20 +9,27 @@ import {
   HttpStatus,
   HttpException,
   Query,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { BedManagementService } from './bed_management.service';
 import { CreateBedManagementDto } from './dto/create-bed_management.dto';
 import { UpdateBedManagementDto } from './dto/update-bed_management.dto';
+import { AuthGuard } from '@nestjs/passport';
+import type { AuthRequest } from 'src/common/interfaces/auth-request.interface';
 
 @Controller('bed-management')
 export class BedManagementController {
   constructor(private readonly bedManagementService: BedManagementService) {}
 
+  @UseGuards(AuthGuard('jwt'))
   @Post()
-  async create(@Body() createBedManagementDto: CreateBedManagementDto) {
+  async create(@Body() createBedManagementDto: CreateBedManagementDto, @Req() req: AuthRequest) {
     try {
+      const user = req.user
       const data = await this.bedManagementService.create(
         createBedManagementDto,
+        user
       );
       return {
         statusCode: HttpStatus.OK,
@@ -40,13 +47,16 @@ export class BedManagementController {
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get()
   async findAll(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
+     @Req() req: AuthRequest
   ) {
     try {
-      const data = await this.bedManagementService.findAll(page, limit);
+      const user = req.user
+      const data = await this.bedManagementService.findAll(page, limit, user);
       return {
         statusCode: HttpStatus.OK,
         message: 'Beds fetched successfully',
@@ -62,11 +72,13 @@ export class BedManagementController {
       );
     }
   }
-
+  
+  @UseGuards(AuthGuard('jwt'))
   @Get('count')
-  async dashboardCounts() {
+  async dashboardCounts(@Req() req: AuthRequest) {
     try {
-      const data = await this.bedManagementService.getCardCounts();
+      const user = req.user
+      const data = await this.bedManagementService.getCardCounts(user);
 
       return {
         statusCode: HttpStatus.OK,

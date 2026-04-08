@@ -22,7 +22,7 @@ export class AppointmentsService {
     private readonly patientRepository: Repository<Patient>
   ) {}
 
-  async create(createAppointmentDto: CreateAppointmentDto): Promise<Appointment> {
+  async create(createAppointmentDto: CreateAppointmentDto, user: any): Promise<Appointment> {
     try {
       const doctor = await this.doctorRepository.findOne({
         where: { id: createAppointmentDto.doctorId },
@@ -40,7 +40,7 @@ export class AppointmentsService {
         throw new BadRequestException('Patient not found');
       }
   
-      const appointment = this.appointmentRepository.create(createAppointmentDto);
+      const appointment = this.appointmentRepository.create({...createAppointmentDto, createdBy: {id: user.userId}, hospitalId: user.hospitalId});
       console.log(appointment, 'appointment');
       return await this.appointmentRepository.save(appointment);
     } catch (error) {
@@ -50,10 +50,13 @@ export class AppointmentsService {
     }
   }
 
-  async findAll(page: number = 1, limit: number = 10){
+  async findAll(page: number = 1, limit: number = 10, user: any){
     try {
       const skip = (page - 1) * limit;
       const [appointments, total] =  await this.appointmentRepository.findAndCount({
+        where:{
+          hospitalId: user.hospitalId
+        },
         order: { createdAt: 'DESC' },
         skip,
         take: limit,
@@ -120,19 +123,26 @@ export class AppointmentsService {
     }
   }
 
-  async getCardCounts() {
-    const totalAppointments = await this.appointmentRepository.count();
+  async getCardCounts(user: any) {
+    const totalAppointments = await this.appointmentRepository.count({
+      where: {
+        hospitalId: user.hospitalId,
+      }});
 
     const scheduled = await this.appointmentRepository.count({
-      where: { status: AppointmentStatus.SCHEDULED },
+      where: { status: AppointmentStatus.SCHEDULED,
+        hospitalId: user.hospitalId,
+       },
     });
 
     const completed = await this.appointmentRepository.count({
-      where: { status: AppointmentStatus.COMPLETED },
+      where: { status: AppointmentStatus.COMPLETED,
+        hospitalId: user.hospitalId,
+       },
     });
 
     const cancelled = await this.appointmentRepository.count({
-      where: { status: AppointmentStatus.CANCELLED },
+      where: { status: AppointmentStatus.CANCELLED,  hospitalId: user.hospitalId},
     });
 
     return {

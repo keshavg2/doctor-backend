@@ -10,6 +10,7 @@ import {
   HttpException,
   UseGuards,
   Patch,
+  Req,
 } from '@nestjs/common';
 import { PatientService } from './patient.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
@@ -19,6 +20,8 @@ import { Role } from 'src/user/enums/role.enum';
 import { Roles } from 'src/auth/roles.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AssignDoctorDto, UpdatePatientDto } from './dto/update-patient.dto';
+import { AuthGuard } from '@nestjs/passport/dist/auth.guard';
+import type { AuthRequest } from 'src/common/interfaces/auth-request.interface';
 
 @Controller('patient')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -26,10 +29,13 @@ import { AssignDoctorDto, UpdatePatientDto } from './dto/update-patient.dto';
 export class PatientController {
   constructor(private readonly patientService: PatientService) { }
 
+  @UseGuards(AuthGuard('jwt'))
   @Post()
-  async create(@Body() createPatientDto: CreatePatientDto) {
+  async create(@Body() createPatientDto: CreatePatientDto, @Req() req: AuthRequest) {
     try {
-      const data = await this.patientService.create(createPatientDto);
+      const user = req.user;
+      // console.log(user);
+      const data = await this.patientService.create(createPatientDto, user);
       return {
         statusCode: HttpStatus.OK,
         message: 'Patient created successfully',
@@ -46,10 +52,12 @@ export class PatientController {
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get()
-  async findAll(@Query() filter: PatientListFilterDto) {
+  async findAll(@Query() filter: PatientListFilterDto, @Req() req: AuthRequest) {
     try {
-      const data = await this.patientService.findAll(filter);
+      const user = req.user;
+      const data = await this.patientService.findAll(filter, user);
       return {
         statusCode: HttpStatus.OK,
         message: 'Patients fetched successfully',
@@ -66,10 +74,12 @@ export class PatientController {
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get('count')
-  async getCounts() {
+  async getCounts(@Req() req: AuthRequest) {
     try {
-      const data = await this.patientService.getPatientCounts();
+      const user = req.user;
+      const data = await this.patientService.getPatientCounts(user);
       console.log(data);
       return {
         statusCode: HttpStatus.OK,

@@ -1,9 +1,12 @@
+import { User } from 'src/user/entities/user.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 
 export enum MedicineStatus {
@@ -44,6 +47,13 @@ export class Medicine {
 
   @Column({ default: true })
   isActive: boolean;
+
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'created_by' })
+  createdBy: User;
+
+  @Column({ name: 'hospital_id', nullable: true })
+  hospitalId: number;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

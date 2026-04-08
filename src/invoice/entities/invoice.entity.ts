@@ -11,6 +11,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { InvoiceMedicine } from '../../invoice_medicines/entities/invoice_medicine.entity';
+import { User } from 'src/user/entities/user.entity';
 
 @Entity('invoices')
 export class Invoice {
@@ -52,6 +53,13 @@ export class Invoice {
   medicines: InvoiceMedicine[];
 
   /** ---------------- Timestamps ---------------- */
+
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'created_by' })
+  createdBy: User;
+
+  @Column({ name: 'hospital_id', nullable: true })
+  hospitalId: number;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

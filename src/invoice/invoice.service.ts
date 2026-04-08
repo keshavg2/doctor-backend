@@ -22,7 +22,7 @@ export class InvoiceService {
     private readonly invoiceMedicineRepo: Repository<InvoiceMedicine>,
   ) { }
 
-  async create(createInvoiceDto: CreateInvoiceDto) {
+  async create(createInvoiceDto: CreateInvoiceDto, user: any) {
     const { patientId, doctorId, medicines } = createInvoiceDto;
 
     if (!medicines || medicines.length === 0) {
@@ -40,6 +40,8 @@ export class InvoiceService {
         doctorId,
         totalPrice,
         status: 'PAID',
+        hospitalId: user.hospitalId,
+        createdBy: { id: user.userId },
       });
 
       const savedInvoice = await manager.save(invoice);
@@ -65,10 +67,13 @@ export class InvoiceService {
     });
   }
 
-  async findAll(page: number = 1, limit: number = 10) {
+  async findAll(page: number = 1, limit: number = 10, user: any) {
     try {
       const skip = (page - 1) * limit;
       const [invoices, total] = await this.invoiceRepo.findAndCount({
+        where: {
+          hospitalId: user.hospitalId,
+        },
         relations: ['medicines', 'doctor', 'patient'],
         order: {
           id: 'DESC',
@@ -179,7 +184,7 @@ export class InvoiceService {
     });
   }
 
-  async getInvoiceStats() {
+  async getInvoiceStats(user: any) {
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
 
@@ -192,23 +197,34 @@ export class InvoiceService {
       totalRevenueResult,
       todayRevenueResult,
     ] = await Promise.all([
-      this.invoiceRepo.count(),
+      this.invoiceRepo.count({
+        where: {
+          hospitalId: user.hospitalId
+        }
+      }),
 
       this.invoiceRepo.count({
         where: {
           createdAt: Between(startOfToday, endOfToday),
+          hospitalId: user.hospitalId
         },
       }),
 
       this.invoiceRepo
         .createQueryBuilder('invoice')
         .select('SUM(invoice.totalPrice)', 'total')
+        .where('invoice.hospitalId = :hospitalId', {
+          hospitalId: user.hospitalId,
+        })
         .getRawOne(),
 
       this.invoiceRepo
         .createQueryBuilder('invoice')
         .select('SUM(invoice.totalPrice)', 'total')
-        .where('invoice.createdAt BETWEEN :start AND :end', {
+        .where('invoice.hospitalId = :hospitalId', {
+          hospitalId: user.hospitalId,
+        })
+        .andWhere('invoice.createdAt BETWEEN :start AND :end', {
           start: startOfToday,
           end: endOfToday,
         })

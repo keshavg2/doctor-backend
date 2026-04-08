@@ -1,17 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpException, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpException, Query, UseGuards, Req } from '@nestjs/common';
 import { MedicinesService } from './medicines.service';
 import { CreateMedicineDto } from './dto/create-medicine.dto';
 import { UpdateMedicineDto } from './dto/update-medicine.dto';
 import { MedicineListDto } from './dto/medicine-list.dto';
+import { AuthGuard } from '@nestjs/passport';
+import type { AuthRequest } from 'src/common/interfaces/auth-request.interface';
 
 @Controller('medicines')
 export class MedicinesController {
   constructor(private readonly medicinesService: MedicinesService) { }
 
+  @UseGuards(AuthGuard('jwt'))
   @Post()
-  async create(@Body() createMedicineDto: CreateMedicineDto) {
+  async create(@Body() createMedicineDto: CreateMedicineDto, @Req() req: AuthRequest) {
     try {
-      const data = await this.medicinesService.create(createMedicineDto);
+      const user = req.user;
+      const data = await this.medicinesService.create(createMedicineDto, user);
       return {
         statusCode: HttpStatus.OK,
         message: 'Medicine created successfully',
@@ -28,11 +32,14 @@ export class MedicinesController {
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get()
   async findAll(@Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,) {
+    @Query('limit') limit: number = 10,
+    @Req() req: AuthRequest) {
     try {
-      const data = await this.medicinesService.findAll(page, limit);
+      const user = req.user
+      const data = await this.medicinesService.findAll(page, limit, user);
       return {
         statusCode: HttpStatus.OK,
         message: 'Medicines fetched successfully',
@@ -49,10 +56,12 @@ export class MedicinesController {
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get('count')
-  async dashboardCounts() {
+  async dashboardCounts( @Req() req: AuthRequest) {
     try {
-      const data = await this.medicinesService.getCardCounts();
+      const user = req.user
+      const data = await this.medicinesService.getCardCounts(user);
 
       return {
         statusCode: HttpStatus.OK,

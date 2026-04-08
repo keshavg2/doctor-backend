@@ -22,7 +22,7 @@ export class DepartmentsService {
     private readonly appointmentRepository: Repository<Appointment>,
   ) { }
 
-  async create(createDepartmentDto: CreateDepartmentDto) {
+  async create(createDepartmentDto: CreateDepartmentDto, user: any) {
     try {
       const existingDepartment = await this.departmentRepository.findOne({
         where: { departmentName: createDepartmentDto.departmentName },
@@ -32,7 +32,7 @@ export class DepartmentsService {
         throw new BadRequestException('Department already exists');
       }
 
-      const department = this.departmentRepository.create(createDepartmentDto);
+      const department = this.departmentRepository.create({...createDepartmentDto, createdBy: {id: user.userId}, hospitalId: user.hospitalId});
 
       const savedDepartment = await this.departmentRepository.save(department);
 
@@ -45,12 +45,15 @@ export class DepartmentsService {
     }
   }
 
-  async findAll(page: number = 1, limit: number = 10) {
+  async findAll(page: number = 1, limit: number = 10, user) {
     try {
       // const departments = await this.departmentRepository.find();
       const skip = (page - 1) * limit;
 
       const [departments, total] = await this.departmentRepository.findAndCount({
+        where:{
+          hospitalId: user.hospitalId
+        },
         order: {
           id: 'DESC',
         },
@@ -137,10 +140,16 @@ export class DepartmentsService {
     }
   }
 
-  async getDepartmentCounts() {
-    const totalDepartments = await this.departmentRepository.count();
+  async getDepartmentCounts(user: any) {
+    const totalDepartments = await this.departmentRepository.count({
+      where: {
+        hospitalId: user.hospitalId,
+      }});
 
-    const totalDoctors = await this.doctorRepository.count();
+    const totalDoctors = await this.doctorRepository.count({
+      where: {
+        hospitalId: user.hospitalId,
+      }});
 
     const visitedPatients = await this.appointmentRepository.count({
       where: {
