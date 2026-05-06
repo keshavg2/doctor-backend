@@ -1,0 +1,58 @@
+// prescription.entity.ts
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    ManyToOne,
+    CreateDateColumn,
+    JoinColumn,
+} from 'typeorm';
+import { User } from '../../user/entities/user.entity';
+import { Doctor } from 'src/doctor/entities/doctor.entity';
+import { Patient } from 'src/patient/entities/patient.entity';
+
+@Entity()
+export class Prescription {
+    @PrimaryGeneratedColumn()
+    id: number;
+
+    @Column()
+    diagnosis: string;
+
+    // ✅ JSONB column for medicines
+    @Column({ type: 'jsonb' })
+    medicines: {
+        name: string;
+        frequency: string;   // e.g. "2 times a day"
+        type: string;        // e.g. "tablet", "syrup"
+        days: number;
+        totalQuantity: number;
+    }[];
+
+    @Column({ nullable: true })
+    notes: string;
+
+    // ✅ Prescription date (manual or default)
+    @Column({ type: 'timestamp' })
+    prescriptionDate: Date;
+
+    // Optional: auto created timestamp
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @Column({ type: 'int', nullable: true })
+    patientId: number;
+
+    @ManyToOne(() => Patient, { eager: false, nullable: true, onDelete: 'SET NULL', })
+    @JoinColumn({ name: 'patientId' })
+    patient: User;
+
+    /* ---------------- Doctor ---------------- */
+    @Column({ type: 'int', nullable: true })
+    doctorId: number;
+
+    @ManyToOne(() => Doctor, { eager: false, nullable: true, onDelete: 'SET NULL', })
+    @JoinColumn({ name: 'doctorId' })
+    doctor: User;
+
+}
