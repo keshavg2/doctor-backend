@@ -14,6 +14,8 @@ import { DepartmentsModule } from './departments/departments.module';
 import { HospitalModule } from './hospital/hospital.module';
 import { env } from 'process';
 import { PrescriptionModule } from './prescription/prescription.module';
+import { HospitalInvoiceModule } from './hospital_invoice/hospital_invoice.module';
+import { InvoiceItemModule } from './invoice-item/invoice-item.module';
 
 
 import * as dotenv from 'dotenv';
@@ -32,8 +34,6 @@ dotenv.config();
       synchronize: true,
       ssl: false,
     }),
-
-
     UserModule,
     AuthModule,
     PatientModule,
@@ -47,6 +47,8 @@ dotenv.config();
     DepartmentsModule,
     HospitalModule,
     PrescriptionModule,
+    HospitalInvoiceModule,
+    InvoiceItemModule,
   ],
 })
 export class AppModule { }

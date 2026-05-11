@@ -12,6 +12,7 @@ import { CreateHospitalInvoiceDto } from './dto/create-hospital_invoice.dto';
 
 import { Patient } from '../patient/entities/patient.entity';
 import { Doctor } from '../doctor/entities/doctor.entity';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class HospitalInvoiceService {
@@ -75,12 +76,25 @@ export class HospitalInvoiceService {
     return await this.invoiceRepo.save(invoice);
   }
 
-  async findAll() {
-    return await this.invoiceRepo.find({
+  async findAll(page: number = 1, limit: number = 10) {
+    const [data, total] = await this.invoiceRepo.findAndCount({
+      // where:{
+      //   hospitalId: user.hospitalId
+      // },
       order: {
         createdAt: 'DESC',
       },
+      skip: (page - 1) * limit,
+      take: limit,
     });
+  
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async findOne(id: number) {
