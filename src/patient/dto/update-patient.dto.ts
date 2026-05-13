@@ -32,6 +32,12 @@ export class UpdatePatientDto {
 
   @IsOptional()
   gender: Gender;
+
+  @IsOptional()
+  fatherName: string;
+
+  @IsOptional()
+  disease: string;
 }
 
 export class AssignDoctorDto {

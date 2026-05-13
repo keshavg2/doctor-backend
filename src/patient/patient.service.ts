@@ -7,7 +7,7 @@ import { CreatePatientDto } from './dto/create-patient.dto';
 import { PatientListFilterDto } from './dto/patient-list-filter.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Patient } from './entities/patient.entity';
-import { Between, Repository } from 'typeorm';
+import { Between, DeepPartial, Repository } from 'typeorm';
 import { AssignDoctorDto, UpdatePatientDto } from './dto/update-patient.dto';
 import { AppointmentStatus } from 'src/appointments/entities/appointment.entity';
 import { Appointment } from 'src/appointments/entities/appointment.entity';
@@ -35,11 +35,41 @@ export class PatientService {
         email,
         age,
         gender,
+        fatherName,
+        disease,
       } = createPatientDto;
-
-      console.log(user);
-      const patient = this.patientRepository.create({
+  
+      // Example Hospital Name: City Hospital
+      // Patient ID: CH-0001
+  
+      const hospitalName = user.hospitalName || 'HOSPITAL';
+  
+      // Create hospital prefix
+      const hospitalPrefix = hospitalName
+        .split(' ')
+        .map((word) => word[0])
+        .join('')
+        .toUpperCase();
+  
+      // Get last patient
+      const lastPatient = await this.patientRepository.findOne({
+        where:{
+          hospitalId: user.hospitalId,
+        },
+        order: {
+          id: 'DESC',
+        },
+      });
+  
+      const nextSerial = lastPatient ? lastPatient.id + 1 : 1;
+  
+      // Generate Patient ID
+      const patientNumber = `${hospitalPrefix}-${String(nextSerial).padStart(4, '0')}`;
+  
+      const patientData: DeepPartial<Patient> = ({
         name,
+        fatherName,
+        disease,
         phone,
         address,
         city,
@@ -49,10 +79,13 @@ export class PatientService {
         email,
         age,
         gender,
-        createdBy: {id: user.userId},
+        createdBy: { id: user.userId },
         hospitalId: user.hospitalId,
+        patientNumber,
       });
 
+      const patient = this.patientRepository.create(patientData);
+  
       return await this.patientRepository.save(patient);
     } catch (error) {
       throw new InternalServerErrorException(

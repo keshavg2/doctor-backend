@@ -71,4 +71,16 @@ export class Patient {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+  // Custom Patient ID
+  @Column({ name: 'patient_number', unique: true, nullable: true  })
+  patientNumber: string;
+
+  // Father's Name
+  @Column({ name: 'father_name', length: 100, nullable: true })
+  fatherName: string;
+
+  // Patient Problem / Disease
+  @Column({ name: 'disease', type: 'text', nullable: true })
+  disease: string;
 }
