@@ -32,4 +32,10 @@ export class CreatePatientDto {
 
   @IsOptional()
   gender: Gender;
+
+  @IsNotEmpty()
+  fatherName: string;
+
+  @IsNotEmpty()
+  disease: string;
 }

@@ -18,20 +18,20 @@ export class HospitalInvoice {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ type: 'int', nullable: true })
+    @Column({ name: 'patient_id', type: 'int', nullable: true })
     patientId: number;
 
     @ManyToOne(() => Patient, { eager: false, nullable: true, onDelete: 'SET NULL', })
-    @JoinColumn({ name: 'patientId' })
-    patient: User;
+    @JoinColumn({ name: 'patient_id' })
+    patient: Patient;
 
     /* ---------------- Doctor ---------------- */
-    @Column({ type: 'int', nullable: true })
+    @Column({ name: 'doctor_id', type: 'int', nullable: true })
     doctorId: number;
 
     @ManyToOne(() => Doctor, { eager: false, nullable: true, onDelete: 'SET NULL', })
-    @JoinColumn({ name: 'doctorId' })
-    doctor: User;
+    @JoinColumn({ name: 'doctor_id' })
+    doctor: Doctor;
 
     @Column()
     type: string; // IPD / OPD
