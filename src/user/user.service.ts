@@ -62,7 +62,10 @@ export class UserService {
   }
 
   findByEmail(email: string) {
-    return this.usersRepository.findOne({ where: { email } });
+    return this.usersRepository.findOne({
+      where: { email },
+      relations: ['hospital'],
+    });
   }
 
   findOne(id: number) {
