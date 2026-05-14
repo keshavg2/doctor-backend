@@ -5,6 +5,7 @@ import { Medicine, MedicineStatus } from './entities/medicine.entity';
 import { CreateMedicineDto } from './dto/create-medicine.dto';
 import { UpdateMedicineDto } from './dto/update-medicine.dto';
 import { MedicineListDto } from './dto/medicine-list.dto';
+import * as XLSX from 'xlsx';
 
 @Injectable()
 export class MedicinesService {
@@ -117,5 +118,68 @@ export class MedicinesService {
       lowStock,
       critical,
     };
+  }
+
+  async uploadExcel(file: Express.Multer.File) {
+    try {
+      // Read excel buffer
+      const workbook = XLSX.read(file.buffer, { type: 'buffer' });
+
+      // First sheet
+      const sheetName = workbook.SheetNames[0];
+
+      // Sheet data
+      const worksheet = workbook.Sheets[sheetName];
+
+      // Convert to JSON
+      const data = XLSX.utils.sheet_to_json(worksheet);
+
+      for (const row of data as any[]) {
+        // Find existing medicine
+        const existingMedicine = await this.medicineRepo.findOne({
+          where: {
+            name: row.name,
+            hospitalId: row.hospital_id,
+          },
+        });
+
+        if (existingMedicine) {
+          // Update existing row
+          await this.medicineRepo.update(existingMedicine.id, {
+            type: row.type,
+            strength: row.strength,
+            manufacturer: row.manufacturer,
+            quantity: row.quantity,
+            price: row.price,
+            status: row.status,
+            isActive: row.isActive,
+            updatedAt: new Date(),
+          });
+        } else {
+          // Create new row
+          const medicine = this.medicineRepo.create({
+            name: row.name,
+            type: row.type,
+            strength: row.strength,
+            manufacturer: row.manufacturer,
+            quantity: row.quantity,
+            price: row.price,
+            status: row.status,
+            isActive: row.isActive,
+            hospitalId: row.hospital_id,
+            createdBy: row.created_by,
+          });
+
+          await this.medicineRepo.save(medicine);
+        }
+      }
+
+      return {
+        success: true,
+        message: 'Excel uploaded successfully',
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 }

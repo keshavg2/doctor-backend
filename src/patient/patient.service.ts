@@ -12,6 +12,7 @@ import { AssignDoctorDto, UpdatePatientDto } from './dto/update-patient.dto';
 import { AppointmentStatus } from 'src/appointments/entities/appointment.entity';
 import { Appointment } from 'src/appointments/entities/appointment.entity';
 import { User } from 'src/user/entities/user.entity';
+import { Hospital } from 'src/hospital/entities/hospital.entity';
 
 @Injectable()
 export class PatientService {
@@ -20,6 +21,8 @@ export class PatientService {
     private patientRepository: Repository<Patient>,
     @InjectRepository(Appointment)
     private appointmentRepository: Repository<Appointment>,
+    @InjectRepository(Hospital)
+    private hospitalRepository: Repository<Hospital>,
   ) { }
 
   async create(createPatientDto: CreatePatientDto, user: any) {
@@ -41,8 +44,14 @@ export class PatientService {
   
       // Example Hospital Name: City Hospital
       // Patient ID: CH-0001
+
+      const hospital = await this.hospitalRepository.findOne({
+        where:{
+          id: user.hospitalId
+        }
+      })
   
-      const hospitalName = user.hospitalName || 'HOSPITAL';
+      const hospitalName = hospital?.name || 'HOSPITAL';
   
       // Create hospital prefix
       const hospitalPrefix = hospitalName

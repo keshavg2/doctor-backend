@@ -32,7 +32,7 @@ dotenv.config();
       database: process.env.DB_DATABASE,
       autoLoadEntities: true,
       synchronize: true,
-      ssl: { rejectUnauthorized: false },
+      ssl: false,
     }),
     UserModule,
     AuthModule,

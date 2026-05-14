@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpException, Query, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpException, Query, UseGuards, Req, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { MedicinesService } from './medicines.service';
 import { CreateMedicineDto } from './dto/create-medicine.dto';
 import { UpdateMedicineDto } from './dto/update-medicine.dto';
 import { MedicineListDto } from './dto/medicine-list.dto';
 import { AuthGuard } from '@nestjs/passport';
 import type { AuthRequest } from 'src/common/interfaces/auth-request.interface';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('medicines')
 export class MedicinesController {
@@ -126,6 +127,18 @@ export class MedicinesController {
         },
         HttpStatus.BAD_REQUEST,
       );
+    }
+  }
+
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadExcel(
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    try {
+      return await this.medicinesService.uploadExcel(file);
+    } catch (error) {
+      throw error;
     }
   }
 }
