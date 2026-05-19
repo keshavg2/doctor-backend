@@ -55,4 +55,6 @@ export class Prescription {
     @JoinColumn({ name: 'doctor_id' })
     doctor: Doctor;
 
+    @Column({ name: 'hospital_id', nullable: true })
+    hospitalId: number;
 }

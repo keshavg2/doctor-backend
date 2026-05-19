@@ -25,7 +25,7 @@ export class PrescriptionService {
     private patientRepo: Repository<Patient>,
   ) {}
 
-  async create(dto: CreatePrescriptionDto) {
+  async create(dto: CreatePrescriptionDto, user: any) {
     try {
       const doctor = await this.doctorRepo.findOneBy({ id: dto.doctorId });
       const patient = await this.patientRepo.findOneBy({ id: dto.patientId });
@@ -42,6 +42,7 @@ export class PrescriptionService {
         patient,
         doctorId: dto.doctorId,
         patientId: dto.patientId,
+        hospitalId: user.hospitalId,
       });
 
       return await this.prescriptionRepo.save(prescription);
@@ -51,9 +52,10 @@ export class PrescriptionService {
     }
   }
 
-  async findAll() {
+  async findAll(user: any) {
     try {
       return await this.prescriptionRepo.find({
+        where: {hospitalId: user.hospitalId},
         relations: ['doctor', 'patient'],
         order: { id: 'DESC' },
       });
