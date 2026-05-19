@@ -8,19 +8,25 @@ import {
   Patch,
   Delete,
   InternalServerErrorException,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { PrescriptionService } from './prescription.service';
 import { CreatePrescriptionDto } from './dto/create-prescription.dto';
 import { UpdatePrescriptionDto } from './dto/update-prescription.dto';
+import { AuthGuard } from '@nestjs/passport';
+import type { AuthRequest } from 'src/common/interfaces/auth-request.interface';
 
 @Controller('prescription')
 export class PrescriptionController {
   constructor(private readonly service: PrescriptionService) {}
 
+  @UseGuards(AuthGuard('jwt'))
   @Post()
-  async create(@Body() dto: CreatePrescriptionDto) {
+  async create(@Body() dto: CreatePrescriptionDto, @Req() req: AuthRequest) {
     try {
-      return await this.service.create(dto);
+      const user = req.user;
+      return await this.service.create(dto, user);
     } catch (error) {
       console.error('Controller Create Error:', error);
       throw error?.status
@@ -29,10 +35,12 @@ export class PrescriptionController {
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get()
-  async findAll() {
+  async findAll(@Req() req: AuthRequest) {
     try {
-      return await this.service.findAll();
+      const user = req.user;
+      return await this.service.findAll(user);
     } catch (error) {
       console.error('Controller FindAll Error:', error);
       throw new InternalServerErrorException(error.message);
