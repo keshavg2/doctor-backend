@@ -130,17 +130,42 @@ export class MedicinesController {
     }
   }
 
-  @Post('upload')
-  @UseInterceptors(FileInterceptor('file'))
-  async uploadExcel(
-    @UploadedFile() file: Express.Multer.File,
-  ) {
-    try {
-      return await this.medicinesService.uploadExcel(file);
-    } catch (error) {
-      throw error;
+    @Post('upload')
+@UseInterceptors(
+  FileInterceptor('file', {
+    limits: {
+      fileSize: 50 * 1024 * 1024, // 50MB
+    },
+    fileFilter: (req, file, callback) => {
+      const allowedExts = ['xlsx', 'xls', 'csv'];
+      const fileExt = file.originalname.split('.').pop()?.toLowerCase();
+      if (allowedExts.includes(fileExt || '')) {
+        callback(null, true);
+      } else {
+        callback(
+          new HttpException(
+            { statusCode: HttpStatus.BAD_REQUEST, message: 'Only .xlsx, .xls, .csv files allowed' },
+            HttpStatus.BAD_REQUEST,
+          ),
+          false,
+        );
+      }
+    },
+  }),
+)
+async uploadExcel(@UploadedFile() file: Express.Multer.File) {
+  try {
+    if (!file) {
+      throw new HttpException(
+        { statusCode: HttpStatus.BAD_REQUEST, message: 'No file uploaded' },
+        HttpStatus.BAD_REQUEST,
+      );
     }
+    return await this.medicinesService.uploadExcel(file);
+  } catch (error) {
+    throw error;
   }
+}
 
   
 }
