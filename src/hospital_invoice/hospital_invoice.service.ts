@@ -10,7 +10,7 @@ import { HospitalInvoice } from './entities/hospital_invoice.entity';
 import { InvoiceItem } from '../invoice-item/entities/invoice-item.entity';
 import { CreateHospitalInvoiceDto } from './dto/create-hospital_invoice.dto';
 
-import { Patient } from '../patient/entities/patient.entity';
+import { Patient, PatientStatus } from '../patient/entities/patient.entity';
 import { Doctor } from '../doctor/entities/doctor.entity';
 import { User } from 'src/user/entities/user.entity';
 
@@ -28,7 +28,7 @@ export class HospitalInvoiceService {
 
     @InjectRepository(Doctor)
     private readonly doctorRepo: Repository<Doctor>,
-  ) {}
+  ) { }
 
   async create(createInvoiceDto: CreateHospitalInvoiceDto) {
     const patient = await this.patientRepo.findOne({
@@ -45,6 +45,10 @@ export class HospitalInvoiceService {
 
     if (!doctor) {
       throw new NotFoundException('Doctor not found');
+    }
+
+    if (patient) {
+      this.patientRepo.save({ ...patient, status: PatientStatus.DISCHARGED })
     }
 
     let grandTotal = 0;
@@ -87,7 +91,7 @@ export class HospitalInvoiceService {
       skip: (page - 1) * limit,
       take: limit,
     });
-  
+
     return {
       data,
       total,

@@ -17,6 +17,15 @@ export enum Gender {
   OTHER = 'OTHER',
 }
 
+export enum PatientStatus {
+  REGISTERED = 'Registered',
+  ACTIVE_OPD = 'Active-OPD',
+  ACTIVE_IPD = 'Active-IPD',
+  UNDER_OBSERVATION = 'Under-observation',
+  DISCHARGED = 'Discharged',
+  FOLLOW_UP = 'Follow-up',
+}
+
 @Entity('patients')
 export class Patient {
   @PrimaryGeneratedColumn()
@@ -83,4 +92,11 @@ export class Patient {
   // Patient Problem / Disease
   @Column({ name: 'disease', type: 'text', nullable: true })
   disease: string;
+
+  @Column({
+    type: 'enum',
+    enum: PatientStatus,
+    default: PatientStatus.REGISTERED,
+  })
+  status: PatientStatus;
 }

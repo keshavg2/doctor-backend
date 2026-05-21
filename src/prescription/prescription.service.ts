@@ -10,7 +10,7 @@ import { Repository } from 'typeorm';
 import { CreatePrescriptionDto } from './dto/create-prescription.dto';
 import { UpdatePrescriptionDto } from './dto/update-prescription.dto';
 import { Doctor } from 'src/doctor/entities/doctor.entity';
-import { Patient } from 'src/patient/entities/patient.entity';
+import { Patient, PatientStatus } from 'src/patient/entities/patient.entity';
 
 @Injectable()
 export class PrescriptionService {
@@ -44,6 +44,10 @@ export class PrescriptionService {
         patientId: dto.patientId,
         hospitalId: user.hospitalId,
       });
+
+      if(patient){
+        this.patientRepo.save({...patient, status: PatientStatus.UNDER_OBSERVATION})
+      }
 
       return await this.prescriptionRepo.save(prescription);
     } catch (error) {
