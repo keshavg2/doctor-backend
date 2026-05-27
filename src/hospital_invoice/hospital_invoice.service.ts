@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 
 import { HospitalInvoice } from './entities/hospital_invoice.entity';
 import { InvoiceItem } from '../invoice-item/entities/invoice-item.entity';
@@ -30,7 +30,7 @@ export class HospitalInvoiceService {
     private readonly doctorRepo: Repository<Doctor>,
   ) { }
 
-  async create(createInvoiceDto: CreateHospitalInvoiceDto) {
+  async create(createInvoiceDto: CreateHospitalInvoiceDto, user: User) {
     const patient = await this.patientRepo.findOne({
       where: { id: createInvoiceDto.patientId },
     });
@@ -75,16 +75,17 @@ export class HospitalInvoiceService {
       oxygenCharges: createInvoiceDto.oxygenCharges,
       grandTotal,
       items: invoiceItems,
+      hospitalId: user.hospitalId
     });
 
     return await this.invoiceRepo.save(invoice);
   }
 
-  async findAll(page: number = 1, limit: number = 10) {
+  async findAll(page: number = 1, limit: number = 10, user: User) {
     const [data, total] = await this.invoiceRepo.findAndCount({
-      // where:{
-      //   hospitalId: user.hospitalId
-      // },
+      where:{
+        hospitalId: user.hospitalId
+      },
       order: {
         createdAt: 'DESC',
       },
@@ -112,4 +113,59 @@ export class HospitalInvoiceService {
 
     return invoice;
   }
+
+  async getHospitalInvoiceStats(user: any) {
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+  
+      const endOfToday = new Date();
+      endOfToday.setHours(23, 59, 59, 999);
+  
+      const [
+        totalInvoices,
+        todayInvoices,
+        totalRevenueResult,
+        todayRevenueResult,
+      ] = await Promise.all([
+        this.invoiceRepo.count({
+          where: {
+            hospitalId: user.hospitalId
+          }
+        }),
+  
+        this.invoiceRepo.count({
+          where: {
+            createdAt: Between(startOfToday, endOfToday),
+            hospitalId: user.hospitalId
+          },
+        }),
+  
+        this.invoiceRepo
+          .createQueryBuilder('invoice')
+          .select('SUM(invoice.grandTotal)', 'total')
+          .where('invoice.hospitalId = :hospitalId', {
+            hospitalId: user.hospitalId,
+          })
+          .getRawOne(),
+  
+        this.invoiceRepo
+          .createQueryBuilder('invoice')
+          .select('SUM(invoice.grandTotal)', 'total')
+          .where('invoice.hospitalId = :hospitalId', {
+            hospitalId: user.hospitalId,
+          })
+          .andWhere('invoice.createdAt BETWEEN :start AND :end', {
+            start: startOfToday,
+            end: endOfToday,
+          })
+          .getRawOne(),
+      ]);
+  
+      return {
+        totalInvoices,
+        todayInvoices,
+        totalRevenue: Number(totalRevenueResult.total) || 0,
+        todayRevenue: Number(todayRevenueResult.total) || 0,
+      };
+    }
 }

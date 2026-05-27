@@ -53,4 +53,7 @@ export class HospitalInvoice {
 
     @CreateDateColumn()
     createdAt: Date;
+
+    @Column({ name: 'hospital_id', nullable: true })
+    hospitalId: number;
 }
