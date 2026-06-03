@@ -127,7 +127,7 @@ export class PatientService {
       // 🔍 Search
       if (search) {
         qb.andWhere(
-          '(user.name ILIKE :search OR patient.phone ILIKE :search)',
+          '(user.name ILIKE :search OR patient.phone ILIKE :search OR patient.patientNumber ILIKE :search)',
           { search: `%${search}%` },
         );
       }

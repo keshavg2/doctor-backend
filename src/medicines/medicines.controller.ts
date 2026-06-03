@@ -37,10 +37,12 @@ export class MedicinesController {
   @Get()
   async findAll(@Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
-    @Req() req: AuthRequest) {
+    @Query('search') search: string,
+    @Req() req: AuthRequest,
+   ) {
     try {
       const user = req.user
-      const data = await this.medicinesService.findAll(page, limit, user);
+      const data = await this.medicinesService.findAll(page, limit, user, search);
       return {
         statusCode: HttpStatus.OK,
         message: 'Medicines fetched successfully',
@@ -59,7 +61,7 @@ export class MedicinesController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('count')
-  async dashboardCounts( @Req() req: AuthRequest) {
+  async dashboardCounts(@Req() req: AuthRequest) {
     try {
       const user = req.user
       const data = await this.medicinesService.getCardCounts(user);
@@ -130,42 +132,42 @@ export class MedicinesController {
     }
   }
 
-    @Post('upload')
-@UseInterceptors(
-  FileInterceptor('file', {
-    limits: {
-      fileSize: 50 * 1024 * 1024, // 50MB
-    },
-    fileFilter: (req, file, callback) => {
-      const allowedExts = ['xlsx', 'xls', 'csv'];
-      const fileExt = file.originalname.split('.').pop()?.toLowerCase();
-      if (allowedExts.includes(fileExt || '')) {
-        callback(null, true);
-      } else {
-        callback(
-          new HttpException(
-            { statusCode: HttpStatus.BAD_REQUEST, message: 'Only .xlsx, .xls, .csv files allowed' },
-            HttpStatus.BAD_REQUEST,
-          ),
-          false,
+  @Post('upload')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: {
+        fileSize: 50 * 1024 * 1024, // 50MB
+      },
+      fileFilter: (req, file, callback) => {
+        const allowedExts = ['xlsx', 'xls', 'csv'];
+        const fileExt = file.originalname.split('.').pop()?.toLowerCase();
+        if (allowedExts.includes(fileExt || '')) {
+          callback(null, true);
+        } else {
+          callback(
+            new HttpException(
+              { statusCode: HttpStatus.BAD_REQUEST, message: 'Only .xlsx, .xls, .csv files allowed' },
+              HttpStatus.BAD_REQUEST,
+            ),
+            false,
+          );
+        }
+      },
+    }),
+  )
+  async uploadExcel(@UploadedFile() file: Express.Multer.File) {
+    try {
+      if (!file) {
+        throw new HttpException(
+          { statusCode: HttpStatus.BAD_REQUEST, message: 'No file uploaded' },
+          HttpStatus.BAD_REQUEST,
         );
       }
-    },
-  }),
-)
-async uploadExcel(@UploadedFile() file: Express.Multer.File) {
-  try {
-    if (!file) {
-      throw new HttpException(
-        { statusCode: HttpStatus.BAD_REQUEST, message: 'No file uploaded' },
-        HttpStatus.BAD_REQUEST,
-      );
+      return await this.medicinesService.uploadExcel(file);
+    } catch (error) {
+      throw error;
     }
-    return await this.medicinesService.uploadExcel(file);
-  } catch (error) {
-    throw error;
   }
-}
 
-  
+
 }

@@ -10,6 +10,7 @@ import {
   InternalServerErrorException,
   UseGuards,
   Req,
+  Query,
 } from '@nestjs/common';
 import { PrescriptionService } from './prescription.service';
 import { CreatePrescriptionDto } from './dto/create-prescription.dto';
@@ -19,7 +20,7 @@ import type { AuthRequest } from 'src/common/interfaces/auth-request.interface';
 
 @Controller('prescription')
 export class PrescriptionController {
-  constructor(private readonly service: PrescriptionService) {}
+  constructor(private readonly service: PrescriptionService) { }
 
   @UseGuards(AuthGuard('jwt'))
   @Post()
@@ -37,10 +38,21 @@ export class PrescriptionController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get()
-  async findAll(@Req() req: AuthRequest) {
+  async findAll(
+    @Req() req: AuthRequest,
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+    @Query('search') search?: string,
+  ) {
     try {
       const user = req.user;
-      return await this.service.findAll(user);
+
+      return await this.service.findAll(
+        user,
+        Number(page),
+        Number(limit),
+        search,
+      );
     } catch (error) {
       console.error('Controller FindAll Error:', error);
       throw new InternalServerErrorException(error.message);

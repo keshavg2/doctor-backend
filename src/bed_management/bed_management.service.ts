@@ -8,13 +8,14 @@ import { Repository } from 'typeorm';
 import { BedManagement, BedStatus } from './entities/bed_management.entity';
 import { CreateBedManagementDto } from './dto/create-bed_management.dto';
 import { UpdateBedManagementDto } from './dto/update-bed_management.dto';
+import { Brackets } from 'typeorm';
 
 @Injectable()
 export class BedManagementService {
   constructor(
     @InjectRepository(BedManagement)
     private readonly bedRepository: Repository<BedManagement>,
-  ) {}
+  ) { }
 
   // CREATE
   async create(
@@ -32,21 +33,73 @@ export class BedManagementService {
   }
 
   // FIND ALL
-  async findAll(page: number = 1, limit: number = 10, user:any) {
+  // async findAll(page: number = 1, limit: number = 10, user:any, search: string) {
+  //   try {
+  //     const skip = (page - 1) * limit;
+  //     // return await this.bedRepository.find();
+  //     const [beds, total] = await this.bedRepository.findAndCount({
+  //       where: {
+  //         hospitalId: user.hospitalId
+  //       },
+  //       order: {
+  //         id: 'DESC',
+  //       },
+  //       skip,
+  //       take: limit,
+  //     });
+
+  //     return {
+  //       beds,
+  //       total,
+  //       page,
+  //       limit,
+  //       totalPages: Math.ceil(total / limit),
+  //     };
+  //   } catch (error) {
+  //     throw new BadRequestException(
+  //       error.message || 'Failed to fetch beds',
+  //     );
+  //   }
+  // }
+
+  async findAll(
+    page: number = 1,
+    limit: number = 10,
+    user: any,
+    search?: string,
+  ) {
     try {
       const skip = (page - 1) * limit;
-      // return await this.bedRepository.find();
-      const [beds, total] = await this.bedRepository.findAndCount({
-        where: {
-          hospitalId: user.hospitalId
-        },
-        order: {
-          id: 'DESC',
-        },
-        skip,
-        take: limit,
-      });
-  
+
+      const queryBuilder = this.bedRepository
+        .createQueryBuilder('bed')
+        .leftJoinAndSelect('bed.patient', 'patient')
+        .where('bed.hospitalId = :hospitalId', {
+          hospitalId: user.hospitalId,
+        });
+
+      if (search) {
+        queryBuilder.andWhere(
+          new Brackets((qb) => {
+            qb.where('bed.bedNumber LIKE :search', {
+              search: `%${search}%`,
+            })
+              .orWhere('bed.ward LIKE :search', {
+                search: `%${search}%`,
+              })
+              .orWhere('patient.name LIKE :search', {
+                search: `%${search}%`,
+              });
+          }),
+        );
+      }
+
+      const [beds, total] = await queryBuilder
+        .orderBy('bed.id', 'DESC')
+        .skip(skip)
+        .take(limit)
+        .getManyAndCount();
+
       return {
         beds,
         total,
@@ -77,8 +130,8 @@ export class BedManagementService {
       throw error instanceof NotFoundException
         ? error
         : new BadRequestException(
-            error.message || 'Failed to fetch bed',
-          );
+          error.message || 'Failed to fetch bed',
+        );
     }
   }
 
@@ -100,8 +153,8 @@ export class BedManagementService {
       throw error instanceof NotFoundException
         ? error
         : new BadRequestException(
-            error.message || 'Failed to update bed',
-          );
+          error.message || 'Failed to update bed',
+        );
     }
   }
 
@@ -114,8 +167,8 @@ export class BedManagementService {
       throw error instanceof NotFoundException
         ? error
         : new BadRequestException(
-            error.message || 'Failed to delete bed',
-          );
+          error.message || 'Failed to delete bed',
+        );
     }
   }
 
@@ -127,21 +180,24 @@ export class BedManagementService {
     });
 
     const available = await this.bedRepository.count({
-      where: { status: BedStatus.AVAILABLE,
+      where: {
+        status: BedStatus.AVAILABLE,
         hospitalId: user.hospitalId,
-       },
+      },
     });
 
     const occupied = await this.bedRepository.count({
-      where: { status: BedStatus.OCCUPIED,
+      where: {
+        status: BedStatus.OCCUPIED,
         hospitalId: user.hospitalId,
-       },
+      },
     });
 
     const maintenance = await this.bedRepository.count({
-      where: { status: BedStatus.MAINTENANCE,
+      where: {
+        status: BedStatus.MAINTENANCE,
         hospitalId: user.hospitalId,
-       },
+      },
     });
 
     return {

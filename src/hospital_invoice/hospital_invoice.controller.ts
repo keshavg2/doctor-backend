@@ -38,14 +38,16 @@ export class HospitalInvoiceController {
   async findAll(
     @Query('page') page: number,
     @Query('limit') limit: number,
-    @Req() req: AuthRequest
+    @Req() req: AuthRequest,
+    @Query('search') search?: string,
   ) {
     try {
       const user = req.user
       const data = await this.invoiceService.findAll(
         Number(page) || 1,
         Number(limit) || 10,
-        user
+        user,
+        search
       );
 
       return {
