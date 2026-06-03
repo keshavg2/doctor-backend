@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Prescription } from './entities/prescription.entity';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import { CreatePrescriptionDto } from './dto/create-prescription.dto';
 import { UpdatePrescriptionDto } from './dto/update-prescription.dto';
 import { Doctor } from 'src/doctor/entities/doctor.entity';
@@ -23,7 +23,7 @@ export class PrescriptionService {
 
     @InjectRepository(Patient)
     private patientRepo: Repository<Patient>,
-  ) {}
+  ) { }
 
   async create(dto: CreatePrescriptionDto, user: any) {
     try {
@@ -45,8 +45,8 @@ export class PrescriptionService {
         hospitalId: user.hospitalId,
       });
 
-      if(patient){
-        this.patientRepo.save({...patient, status: PatientStatus.UNDER_OBSERVATION})
+      if (patient) {
+        this.patientRepo.save({ ...patient, status: PatientStatus.UNDER_OBSERVATION })
       }
 
       return await this.prescriptionRepo.save(prescription);
@@ -56,13 +56,67 @@ export class PrescriptionService {
     }
   }
 
-  async findAll(user: any) {
+  // async findAll(user: any) {
+  //   try {
+  //     return await this.prescriptionRepo.find({
+  //       where: {hospitalId: user.hospitalId},
+  //       relations: ['doctor', 'patient'],
+  //       order: { id: 'DESC' },
+  //     });
+  //   } catch (error) {
+  //     throw new InternalServerErrorException(error.message);
+  //   }
+  // }
+
+  async findAll(
+    user: any,
+    page: number = 1,
+    limit: number = 10,
+    search?: string,
+  ) {
     try {
-      return await this.prescriptionRepo.find({
-        where: {hospitalId: user.hospitalId},
-        relations: ['doctor', 'patient'],
-        order: { id: 'DESC' },
-      });
+      const queryBuilder = this.prescriptionRepo
+        .createQueryBuilder('prescription')
+        .leftJoinAndSelect('prescription.doctor', 'doctor')
+        .leftJoinAndSelect('prescription.patient', 'patient')
+        .where('prescription.hospitalId = :hospitalId', {
+          hospitalId: user.hospitalId,
+        });
+
+      if (search) {
+        queryBuilder.andWhere(
+          new Brackets((qb) => {
+            qb.where('patient.name LIKE :search', {
+              search: `%${search}%`,
+            })
+              .orWhere('patient.patientNumber LIKE :search', {
+                search: `%${search}%`,
+              })
+              .orWhere('doctor.name LIKE :search', {
+                search: `%${search}%`,
+              })
+              .orWhere('CAST(prescription.id AS CHAR) LIKE :search', {
+                search: `%${search}%`,
+              });
+          }),
+        );
+      }
+
+      const [data, total] = await queryBuilder
+        .orderBy('prescription.id', 'DESC')
+        .skip((page - 1) * limit)
+        .take(limit)
+        .getManyAndCount();
+
+      return {
+        data,
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }

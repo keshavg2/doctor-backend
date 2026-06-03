@@ -47,10 +47,10 @@ export class AppointmentsController {
   @UseGuards(AuthGuard('jwt'))
   @Get()
   async findAll(@Query('page') page: number = 1,
-  @Query('limit') limit: number = 10, @Req() req: AuthRequest) {
+  @Query('limit') limit: number = 10, @Req() req: AuthRequest, @Query('search') search: string) {
     try {
       const user = req.user;
-      const data = await this.appointmentsService.findAll(page, limit, user);
+      const data = await this.appointmentsService.findAll(page, limit, user, search);
       return {
         statusCode: HttpStatus.OK,
         message: 'Appointments fetched successfully',

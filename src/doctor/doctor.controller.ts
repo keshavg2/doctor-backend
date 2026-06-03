@@ -51,11 +51,12 @@ export class DoctorController {
   async findAll(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
-    @Req() req: AuthRequest
+    @Req() req: AuthRequest,
+    @Query('search') search?: string,
   ) {
     try {
       const user = req.user;
-      const data = await this.doctorService.findAll(page, limit, user);
+      const data = await this.doctorService.findAll(page, limit, user, search);
 
       return {
         statusCode: HttpStatus.OK,

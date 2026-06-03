@@ -13,6 +13,7 @@ import { CreateHospitalInvoiceDto } from './dto/create-hospital_invoice.dto';
 import { Patient, PatientStatus } from '../patient/entities/patient.entity';
 import { Doctor } from '../doctor/entities/doctor.entity';
 import { User } from 'src/user/entities/user.entity';
+import { Brackets } from 'typeorm';
 
 @Injectable()
 export class HospitalInvoiceService {
@@ -81,17 +82,61 @@ export class HospitalInvoiceService {
     return await this.invoiceRepo.save(invoice);
   }
 
-  async findAll(page: number = 1, limit: number = 10, user: User) {
-    const [data, total] = await this.invoiceRepo.findAndCount({
-      where:{
-        hospitalId: user.hospitalId
-      },
-      order: {
-        createdAt: 'DESC',
-      },
-      skip: (page - 1) * limit,
-      take: limit,
-    });
+  // async findAll(page: number = 1, limit: number = 10, user: User, search: string | undefined) {
+  //   const [data, total] = await this.invoiceRepo.findAndCount({
+  //     where:{
+  //       hospitalId: user.hospitalId
+  //     },
+  //     order: {
+  //       createdAt: 'DESC',
+  //     },
+  //     skip: (page - 1) * limit,
+  //     take: limit,
+  //   });
+
+  //   return {
+  //     data,
+  //     total,
+  //     page,
+  //     limit,
+  //     totalPages: Math.ceil(total / limit),
+  //   };
+  // }
+  async findAll(
+    page: number = 1,
+    limit: number = 10,
+    user: User,
+    search?: string,
+  ) {
+    const queryBuilder = this.invoiceRepo
+      .createQueryBuilder('invoice')
+      .leftJoinAndSelect('invoice.patient', 'patient')
+      .leftJoinAndSelect('invoice.doctor', 'doctor')
+      .where('invoice.hospitalId = :hospitalId', {
+        hospitalId: user.hospitalId,
+      });
+
+    if (search) {
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          qb.where('patient.patientNumber LIKE :search', {
+            search: `%${search}%`,
+          })
+            .orWhere('patient.name LIKE :search', {
+              search: `%${search}%`,
+            })
+            .orWhere('doctor.name LIKE :search', {
+              search: `%${search}%`,
+            });
+        }),
+      );
+    }
+
+    const [data, total] = await queryBuilder
+      .orderBy('invoice.createdAt', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
 
     return {
       data,
@@ -115,57 +160,57 @@ export class HospitalInvoiceService {
   }
 
   async getHospitalInvoiceStats(user: any) {
-      const startOfToday = new Date();
-      startOfToday.setHours(0, 0, 0, 0);
-  
-      const endOfToday = new Date();
-      endOfToday.setHours(23, 59, 59, 999);
-  
-      const [
-        totalInvoices,
-        todayInvoices,
-        totalRevenueResult,
-        todayRevenueResult,
-      ] = await Promise.all([
-        this.invoiceRepo.count({
-          where: {
-            hospitalId: user.hospitalId
-          }
-        }),
-  
-        this.invoiceRepo.count({
-          where: {
-            createdAt: Between(startOfToday, endOfToday),
-            hospitalId: user.hospitalId
-          },
-        }),
-  
-        this.invoiceRepo
-          .createQueryBuilder('invoice')
-          .select('SUM(invoice.grandTotal)', 'total')
-          .where('invoice.hospitalId = :hospitalId', {
-            hospitalId: user.hospitalId,
-          })
-          .getRawOne(),
-  
-        this.invoiceRepo
-          .createQueryBuilder('invoice')
-          .select('SUM(invoice.grandTotal)', 'total')
-          .where('invoice.hospitalId = :hospitalId', {
-            hospitalId: user.hospitalId,
-          })
-          .andWhere('invoice.createdAt BETWEEN :start AND :end', {
-            start: startOfToday,
-            end: endOfToday,
-          })
-          .getRawOne(),
-      ]);
-  
-      return {
-        totalInvoices,
-        todayInvoices,
-        totalRevenue: Number(totalRevenueResult.total) || 0,
-        todayRevenue: Number(todayRevenueResult.total) || 0,
-      };
-    }
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+
+    const [
+      totalInvoices,
+      todayInvoices,
+      totalRevenueResult,
+      todayRevenueResult,
+    ] = await Promise.all([
+      this.invoiceRepo.count({
+        where: {
+          hospitalId: user.hospitalId
+        }
+      }),
+
+      this.invoiceRepo.count({
+        where: {
+          createdAt: Between(startOfToday, endOfToday),
+          hospitalId: user.hospitalId
+        },
+      }),
+
+      this.invoiceRepo
+        .createQueryBuilder('invoice')
+        .select('SUM(invoice.grandTotal)', 'total')
+        .where('invoice.hospitalId = :hospitalId', {
+          hospitalId: user.hospitalId,
+        })
+        .getRawOne(),
+
+      this.invoiceRepo
+        .createQueryBuilder('invoice')
+        .select('SUM(invoice.grandTotal)', 'total')
+        .where('invoice.hospitalId = :hospitalId', {
+          hospitalId: user.hospitalId,
+        })
+        .andWhere('invoice.createdAt BETWEEN :start AND :end', {
+          start: startOfToday,
+          end: endOfToday,
+        })
+        .getRawOne(),
+    ]);
+
+    return {
+      totalInvoices,
+      todayInvoices,
+      totalRevenue: Number(totalRevenueResult.total) || 0,
+      todayRevenue: Number(todayRevenueResult.total) || 0,
+    };
+  }
 }
