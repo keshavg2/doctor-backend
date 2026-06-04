@@ -16,6 +16,7 @@ import { env } from 'process';
 import { PrescriptionModule } from './prescription/prescription.module';
 import { HospitalInvoiceModule } from './hospital_invoice/hospital_invoice.module';
 import { InvoiceItemModule } from './invoice-item/invoice-item.module';
+import { PriceModule } from './price/price.module';
 
 
 import * as dotenv from 'dotenv';
@@ -49,6 +50,7 @@ dotenv.config();
     PrescriptionModule,
     HospitalInvoiceModule,
     InvoiceItemModule,
+    PriceModule,
   ],
 })
 export class AppModule { }
