@@ -112,6 +112,7 @@ export class HospitalInvoiceService {
       .createQueryBuilder('invoice')
       .leftJoinAndSelect('invoice.patient', 'patient')
       .leftJoinAndSelect('invoice.doctor', 'doctor')
+      .leftJoinAndSelect('invoice.items', 'invoiceItem')
       .where('invoice.hospitalId = :hospitalId', {
         hospitalId: user.hospitalId,
       });
@@ -212,5 +213,56 @@ export class HospitalInvoiceService {
       totalRevenue: Number(totalRevenueResult.total) || 0,
       todayRevenue: Number(todayRevenueResult.total) || 0,
     };
+  }
+
+  async update(
+    id: number,
+    updateInvoiceDto: Partial<CreateHospitalInvoiceDto>,
+    user: any,
+  ) {
+    try {
+      const invoice = await this.invoiceRepo.findOne({
+        where: {
+          id,
+          hospitalId: user.hospitalId,
+        },
+      });
+  
+      if (!invoice) {
+        throw new NotFoundException('Invoice not found');
+      }
+  
+      Object.assign(invoice, updateInvoiceDto);
+  
+      return await this.invoiceRepo.save(invoice);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async remove(
+    id: number,
+    user: any,
+  ) {
+    try {
+      const invoice = await this.invoiceRepo.findOne({
+        where: {
+          id,
+          hospitalId: user.hospitalId,
+        },
+      });
+  
+      if (!invoice) {
+        throw new NotFoundException('Invoice not found');
+      }
+  
+      await this.invoiceRepo.remove(invoice);
+  
+      return {
+        id,
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 }
