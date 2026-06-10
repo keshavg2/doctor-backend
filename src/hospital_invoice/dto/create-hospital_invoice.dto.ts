@@ -22,6 +22,9 @@ import {
   
     @IsNumber()
     rate: number;
+
+    @IsNumber()
+    amount: number;
   }
   
   export class CreateHospitalInvoiceDto {
@@ -40,6 +43,10 @@ import {
     @IsOptional()
     @IsString()
     remarks: string;
+
+    @IsOptional()
+    @IsNumber()
+    discount: number;
   
     @IsArray()
     @ValidateNested({ each: true })
