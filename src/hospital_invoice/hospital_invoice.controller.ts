@@ -2,11 +2,13 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpException,
   HttpStatus,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Query,
   Req,
@@ -89,6 +91,68 @@ export class HospitalInvoiceController {
       return await this.invoiceService.findOne(id);
     } catch (error) {
       throw error;
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch(':id')
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateInvoiceDto: Partial<CreateHospitalInvoiceDto>,
+    @Req() req: AuthRequest,
+  ) {
+    try {
+      const user = req.user;
+
+      const data = await this.invoiceService.update(
+        id,
+        updateInvoiceDto,
+        user,
+      );
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Invoice updated successfully',
+        data,
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: error.message || 'Failed to update invoice',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete(':id')
+  async remove(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: AuthRequest,
+  ) {
+    try {
+      const user = req.user;
+
+      const data = await this.invoiceService.remove(
+        id,
+        user,
+      );
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Invoice deleted successfully',
+        data,
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: error.message || 'Failed to delete invoice',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 }
