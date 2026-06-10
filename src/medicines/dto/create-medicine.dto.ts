@@ -16,9 +16,11 @@ export class CreateMedicineDto {
   @IsString()
   manufacturer?: string;
 
+  @IsOptional()
   @IsNumber()
   quantity: number;
 
+  @IsOptional()
   @IsNumber()
   price: number;
 
