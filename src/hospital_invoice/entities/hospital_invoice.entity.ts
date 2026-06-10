@@ -39,6 +39,9 @@ export class HospitalInvoice {
     @Column({ default: 0 })
     grandTotal: number;
 
+    @Column({ default: 0, nullable: true })
+    discount: number;
+
     @Column({ nullable: true })
     remarks: string;
 

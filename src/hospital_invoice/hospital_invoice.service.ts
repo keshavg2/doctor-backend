@@ -68,6 +68,10 @@ export class HospitalInvoiceService {
       });
     });
 
+    if(createInvoiceDto.discount){
+      grandTotal-=createInvoiceDto.discount
+    }
+
     const invoice = this.invoiceRepo.create({
       patient,
       doctor,
@@ -233,6 +237,19 @@ export class HospitalInvoiceService {
       }
   
       Object.assign(invoice, updateInvoiceDto);
+
+      const totalAmount =
+      updateInvoiceDto.items?.reduce(
+        (sum, item) => sum + Number(item.amount || 0),
+        0,
+      ) ?? invoice.grandTotal;
+
+    // Apply discount
+    const discount =
+      updateInvoiceDto.discount ?? invoice.discount ?? 0;
+
+    // invoice.totalAmount = totalAmount;
+    invoice.grandTotal = totalAmount - discount;
   
       return await this.invoiceRepo.save(invoice);
     } catch (error) {
