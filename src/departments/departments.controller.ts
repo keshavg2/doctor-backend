@@ -106,7 +106,7 @@ export class DepartmentsController {
       return await this.departmentsService.remove(+id);
     } catch (error) {
       throw new HttpException(
-        error.message || 'Failed to delete department',
+        error.message || 'This department cannot be deleted because it is currently associated with one or more doctors',
         HttpStatus.BAD_REQUEST,
       );
     }
