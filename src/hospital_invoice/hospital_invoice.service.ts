@@ -80,7 +80,8 @@ export class HospitalInvoiceService {
       oxygenCharges: createInvoiceDto.oxygenCharges,
       grandTotal,
       items: invoiceItems,
-      hospitalId: user.hospitalId
+      hospitalId: user.hospitalId,
+      discount: createInvoiceDto.discount,
     });
 
     return await this.invoiceRepo.save(invoice);
