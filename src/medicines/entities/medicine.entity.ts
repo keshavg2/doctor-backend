@@ -20,10 +20,10 @@ export class Medicine {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ length: 150 })
+  @Column({ length: 150, nullable: true})
   name: string;
 
-  @Column({ length: 50 })
+  @Column({ length: 50, nullable: true })
   type: string;
 
   @Column({ length: 50, nullable: true })
@@ -33,10 +33,10 @@ export class Medicine {
   manufacturer: string;
 
   @Column({ nullable: true })
-  quantity: number;
+  quantity: string;
 
   @Column({ nullable: true })
-  price: number;
+  price: string;
 
   @Column({
     type: 'enum',
