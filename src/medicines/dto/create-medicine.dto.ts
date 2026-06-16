@@ -17,12 +17,12 @@ export class CreateMedicineDto {
   manufacturer?: string;
 
   @IsOptional()
-  @IsNumber()
-  quantity: number;
+  @IsNumber() 
+  quantity: string;
 
   @IsOptional()
   @IsNumber()
-  price: number;
+  price: string;
 
   @IsOptional()
   @IsEnum(MedicineStatus)
